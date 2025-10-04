@@ -6,11 +6,13 @@ import '../widgets/chat_message.dart';
 import '../services/conversation_service.dart';
 import '../services/ollama_service.dart';
 import '../services/summarization_service.dart';
+import '../services/settings_service.dart';
 import '../utils/platform_utils.dart';
 import '../utils/permission_utils.dart';
 import '../utils/speech_utils.dart';
 import '../utils/logger.dart';
 import '../constants/app_constants.dart';
+import 'settings_screen.dart';
 
 /// Main chat screen component that handles the chat interface
 class ChatScreen extends StatefulWidget {
@@ -313,6 +315,33 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          AppConstants.appName,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.settings_outlined,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
