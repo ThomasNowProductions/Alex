@@ -101,6 +101,27 @@ class ConversationService {
     AppLogger.userAction('Conversation context cleared - previous messages: $previousMessageCount');
   }
 
+  static Future<void> clearAllHistory() async {
+    final previousMessageCount = _context.messages.length;
+    _context = ConversationContext(
+      messages: [],
+      summary: '',
+      lastUpdated: DateTime.now(),
+    );
+
+    // Delete the conversation context file
+    try {
+      final file = await _localFile;
+      if (await file.exists()) {
+        await file.delete();
+      }
+      AppLogger.userAction('All conversation history cleared - previous messages: $previousMessageCount');
+    } catch (e) {
+      AppLogger.e('Error deleting conversation history file', e);
+      rethrow;
+    }
+  }
+
   static List<ConversationMessage> getRecentMessages({int limit = 50}) {
     final recentMessages = _context.messages.length <= limit
         ? _context.messages

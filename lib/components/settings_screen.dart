@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/settings_service.dart';
 import '../services/conversation_service.dart';
+import '../utils/logger.dart';
 
-/// Settings screen for displaying conversation summaries
+/// Settings screen for app preferences and configuration
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -16,7 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Conversation Summary',
+          'Settings',
           style: GoogleFonts.playfairDisplay(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -33,7 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             end: Alignment.bottomCenter,
             colors: [
               Theme.of(context).colorScheme.surface,
-              Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
+              Theme.of(context).colorScheme.surface.withOpacity(0.95),
             ],
           ),
         ),
@@ -43,150 +45,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildContent() {
-    final conversationContext = ConversationService.context;
-    final messages = conversationContext.messages;
-
-    if (messages.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    if (conversationContext.summary.isEmpty) {
-      return _buildNoSummaryState();
-    }
-
-    return SingleChildScrollView(
+    return ListView(
       padding: const EdgeInsets.all(24),
-      child: _buildStructuredSummaryCard(conversationContext.summary),
+      children: [
+        _buildSectionCard(
+          title: 'Settings',
+          icon: Icons.settings_outlined,
+          children: [
+            _buildThemeModeSetting(),
+            const SizedBox(height: 24),
+            _buildDeleteHistoryButton(),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.08),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                  blurRadius: 30,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            width: 100,
-            height: 100,
-            child: Icon(
-              Icons.chat_bubble_outline_rounded,
-              size: 45,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No Conversations Yet',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Start a conversation with Alex to see\nyour summary appear here',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNoSummaryState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15),
-                  Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.08),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
-                  blurRadius: 25,
-                  spreadRadius: 3,
-                ),
-              ],
-            ),
-            width: 90,
-            height: 90,
-            child: Icon(
-              Icons.summarize_outlined,
-              size: 40,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Building Summary...',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Continue your conversation and a summary\nwill be generated automatically',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 15,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStructuredSummaryCard(String summary) {
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.15),
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+            Theme.of(context).colorScheme.secondary.withOpacity(0.15),
+            Theme.of(context).colorScheme.primary.withOpacity(0.08),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -197,7 +92,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header section
             Row(
               children: [
                 Container(
@@ -212,246 +106,245 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   width: 50,
                   height: 50,
-                  child: const Icon(
-                    Icons.psychology_alt,
+                  child: Icon(
+                    icon,
                     color: Colors.white,
                     size: 26,
                   ),
                 ),
                 const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Conversation Summary',
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      Text(
-                        'Key insights from our discussion',
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
+                Text(
+                  title,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-
-            // Structured summary content
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
-                    Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: _buildStructuredSummary(summary),
-              ),
-            ),
+            const SizedBox(height: 20),
+            ...children,
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStructuredSummary(String summary) {
-    List<SummarySection> sections = _parseSummaryIntoSections(summary);
-
-    if (sections.isEmpty) {
-      return _buildPlainTextSummary(summary);
-    }
-
+  Widget _buildThemeModeSetting() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: sections.expand((section) => [
-        _buildSummarySection(section),
-        if (section != sections.last) const SizedBox(height: 16),
-      ]).toList(),
+      children: [
+        Text(
+          'Theme Mode',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildRadioOption(
+                title: 'System',
+                value: 'system',
+                groupValue: SettingsService.themeMode,
+                onChanged: (value) => _updateSetting('themeMode', value!),
+              ),
+              Divider(
+                height: 1,
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              ),
+              _buildRadioOption(
+                title: 'Light',
+                value: 'light',
+                groupValue: SettingsService.themeMode,
+                onChanged: (value) => _updateSetting('themeMode', value!),
+              ),
+              Divider(
+                height: 1,
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              ),
+              _buildRadioOption(
+                title: 'Dark',
+                value: 'dark',
+                groupValue: SettingsService.themeMode,
+                onChanged: (value) => _updateSetting('themeMode', value!),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  List<SummarySection> _parseSummaryIntoSections(String summary) {
-    List<SummarySection> sections = [];
 
-    // Common patterns for section headers
-    List<String> headerPatterns = [
-      r'^Key Points?:',
-      r'^Main Topics?:',
-      r'^Summary:',
-      r'^Discussion:',
-      r'^Insights?:',
-      r'^Overview:',
-      r'^Highlights?:',
-      r'^Important:',
-      r'^Topics?:',
-      r'^Themes?:',
-      r'^Conclusions?:',
-      r'^Takeaways?:',
-    ];
-
-    List<String> lines = summary.split('\n').where((line) => line.trim().isNotEmpty).toList();
-
-    SummarySection? currentSection;
-    List<String> currentContent = [];
-
-    for (String line in lines) {
-      String trimmedLine = line.trim();
-      if (trimmedLine.isEmpty) continue;
-
-      // Check if line matches header pattern
-      bool isHeader = headerPatterns.any((pattern) =>
-          RegExp(pattern, caseSensitive: false).hasMatch(trimmedLine));
-
-      if (isHeader && currentContent.isNotEmpty) {
-        // Save previous section
-        if (currentSection != null) {
-          currentSection.content = currentContent.join('\n').trim();
-          sections.add(currentSection);
-        }
-
-        // Start new section
-        currentSection = SummarySection(
-          title: trimmedLine,
-          content: '',
-          type: SummarySectionType.header,
-        );
-        currentContent = [];
-      } else if (isHeader) {
-        // First section
-        currentSection = SummarySection(
-          title: trimmedLine,
-          content: '',
-          type: SummarySectionType.header,
-        );
-        currentContent = [];
-      } else if (currentSection != null) {
-        // Add to current section content
-        currentContent.add(trimmedLine);
-      } else {
-        // No section yet, treat as general content
-        currentContent.add(trimmedLine);
-      }
-    }
-
-    // Add final section
-    if (currentSection != null) {
-      currentSection.content = currentContent.join('\n').trim();
-      sections.add(currentSection);
-    } else if (currentContent.isNotEmpty) {
-      // No headers found, treat as general summary
-      sections.add(SummarySection(
-        title: 'Summary',
-        content: currentContent.join('\n').trim(),
-        type: SummarySectionType.general,
-      ));
-    }
-
-    return sections;
+  Widget _buildDeleteHistoryButton() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Conversation History',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Delete all conversation history and start fresh',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _showDeleteConfirmationDialog,
+            icon: const Icon(Icons.delete_forever_outlined),
+            label: Text(
+              'Delete All History',
+              style: GoogleFonts.playfairDisplay(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget _buildSummarySection(SummarySection section) {
-    switch (section.type) {
-      case SummarySectionType.header:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.secondary,
-                        Theme.of(context).colorScheme.primary,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    section.title,
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildRadioOption({
+    required String title,
+    required String value,
+    required String groupValue,
+    required Function(String?) onChanged,
+  }) {
+    final isSelected = value == groupValue;
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+            : null,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        title: Text(
+          title,
+          style: GoogleFonts.playfairDisplay(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        trailing: isSelected
+            ? Icon(
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              )
+            : null,
+        onTap: () => onChanged(value),
+      ),
+    );
+  }
+
+  void _updateSetting(String key, dynamic value) {
+    setState(() {
+      SettingsService.setSetting(key, value);
+      SettingsService.saveSettings();
+    });
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Delete All History?',
+            style: GoogleFonts.playfairDisplay(
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 8),
-            Text(
-              section.content,
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 15,
-                color: Theme.of(context).colorScheme.onSurface,
-                height: 1.6,
-                fontWeight: FontWeight.w500,
+          ),
+          content: Text(
+            'This action cannot be undone. All conversation history will be permanently deleted.',
+            style: GoogleFonts.playfairDisplay(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.playfairDisplay(),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteAllHistory();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                'Delete',
+                style: GoogleFonts.playfairDisplay(),
               ),
             ),
           ],
         );
-
-      case SummarySectionType.general:
-        return Text(
-          section.content,
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 15,
-            color: Theme.of(context).colorScheme.onSurface,
-            height: 1.6,
-            fontWeight: FontWeight.w500,
-          ),
-        );
-    }
-  }
-
-  Widget _buildPlainTextSummary(String summary) {
-    return Text(
-      summary,
-      style: GoogleFonts.playfairDisplay(
-        fontSize: 15,
-        color: Theme.of(context).colorScheme.onSurface,
-        height: 1.6,
-        fontWeight: FontWeight.w500,
-      ),
+      },
     );
   }
-}
 
-/// Model for summary sections
-class SummarySection {
-  final String title;
-  late String content;
-  final SummarySectionType type;
-
-  SummarySection({
-    required this.title,
-    required this.content,
-    required this.type,
-  });
-}
-
-enum SummarySectionType {
-  header,
-  general,
+  void _deleteAllHistory() async {
+    try {
+      await SettingsService.clearAllHistory();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'All conversation history has been deleted',
+              style: GoogleFonts.playfairDisplay(),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.e('Error deleting history', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to delete history. Please try again.',
+              style: GoogleFonts.playfairDisplay(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 }

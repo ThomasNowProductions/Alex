@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/material.dart';
 import '../utils/logger.dart';
+import 'conversation_service.dart';
 
 /// Service for managing user settings and preferences
 class SettingsService {
@@ -13,6 +16,10 @@ class SettingsService {
   };
 
   static Map<String, dynamic> _settings = Map.from(_defaultSettings);
+
+  // Stream controller for theme changes
+  static final StreamController<String> _themeController = StreamController<String>.broadcast();
+  static Stream<String> get themeChangeStream => _themeController.stream;
 
   static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
@@ -68,6 +75,11 @@ class SettingsService {
   static void setSetting(String key, dynamic value) {
     _settings[key] = value;
     AppLogger.d('Setting updated: $key = $value');
+
+    // Notify listeners if theme mode changed
+    if (key == 'themeMode') {
+      _themeController.add(value);
+    }
   }
 
   /// Reset settings to default
@@ -78,4 +90,10 @@ class SettingsService {
 
   // Convenience getter for theme setting
   static String get themeMode => getSetting('themeMode', 'system');
+
+  /// Clear all conversation history
+  static Future<void> clearAllHistory() async {
+    AppLogger.i('Clearing all conversation history');
+    await ConversationService.clearAllHistory();
+  }
 }

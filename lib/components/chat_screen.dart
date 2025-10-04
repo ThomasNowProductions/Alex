@@ -6,7 +6,6 @@ import '../widgets/chat_message.dart';
 import '../services/conversation_service.dart';
 import '../services/ollama_service.dart';
 import '../services/summarization_service.dart';
-import '../services/settings_service.dart';
 import '../utils/platform_utils.dart';
 import '../utils/permission_utils.dart';
 import '../utils/speech_utils.dart';
