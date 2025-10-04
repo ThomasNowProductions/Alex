@@ -339,30 +339,43 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                         child: TextField(
-                          controller: _messageController,
-                          focusNode: _focusNode,
-                          decoration: InputDecoration(
-                            hintText: 'Express yourself...',
-                            hintStyle: GoogleFonts.playfairDisplay(
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                          ),
-                          style: GoogleFonts.playfairDisplay(),
-                          onSubmitted: _sendMessage,
-                          autofocus: true,
-                        ),
+                           controller: _messageController,
+                           focusNode: _focusNode,
+                           decoration: InputDecoration(
+                             hintText: 'Express yourself...',
+                             hintStyle: GoogleFonts.playfairDisplay(
+                               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                             ),
+                             border: InputBorder.none,
+                             contentPadding: const EdgeInsets.symmetric(
+                               horizontal: 20,
+                               vertical: 16,
+                             ),
+                             suffixIcon: _speechEnabled ? Container(
+                               margin: const EdgeInsets.only(right: 8),
+                               child: IconButton(
+                                 onPressed: _isLoading ? null : () {
+                                   if (_isListening) {
+                                     _stopListening();
+                                   } else {
+                                     _startListening();
+                                   }
+                                 },
+                                 icon: Icon(
+                                   _isListening ? Icons.mic_off : Icons.mic,
+                                   color: _isListening ? Colors.red : Theme.of(context).colorScheme.primary,
+                                   size: 20,
+                                 ),
+                               ),
+                             ) : null,
+                           ),
+                           style: GoogleFonts.playfairDisplay(),
+                           onSubmitted: _sendMessage,
+                           autofocus: true,
+                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Microphone button for speech recognition
-                    if (_speechEnabled)
-                      _buildMicrophoneButton(),
-                    if (_speechEnabled) const SizedBox(width: 8),
                     // Send button
                     _buildSendButton(),
                   ],
@@ -430,38 +443,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  /// Build microphone button
-  Widget _buildMicrophoneButton() {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: _isListening ? Colors.red : Theme.of(context).colorScheme.secondary,
-        boxShadow: [
-          BoxShadow(
-            color: (_isListening
-                ? Colors.red
-                : Theme.of(context).colorScheme.secondary).withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: IconButton(
-        onPressed: _isLoading || !_speechEnabled ? null : () {
-          if (_isListening) {
-            _stopListening();
-          } else {
-            _startListening();
-          }
-        },
-        icon: Icon(
-          _isListening ? Icons.mic_off : Icons.mic,
-          color: Colors.white,
-        ),
-        iconSize: 20,
-      ),
-    );
-  }
 
 
   /// Build send button
