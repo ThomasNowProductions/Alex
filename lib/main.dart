@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'services/ollama_service.dart';
@@ -1128,22 +1129,133 @@ class ChatMessage extends StatelessWidget {
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.8,
               ),
-              child: SelectableText(
-                text,
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w400,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  height: 1.5,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 3,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+              child: MarkdownBody(
+                data: text,
+                styleSheet: MarkdownStyleSheet(
+                  // Base text style matching the original design
+                  p: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  // Bold text styling
+                  strong: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700, // Bold weight for **bold** text
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  // Italic text styling
+                  em: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.italic, // Italic style for *italic* text
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  // Disable headers by making them look like regular text
+                  h1: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  h2: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  h3: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  h4: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  h5: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  h6: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    height: 1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                 ),
-                textAlign: TextAlign.center,
+                selectable: true, // Keep text selectable like before
               ),
             ),
         ],
