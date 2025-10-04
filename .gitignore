@@ -1,0 +1,77 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.pub-cache/
+build/
+flutter_build/
+.packages
+pubspec.lock
+
+# Android
+/android/.gradle
+/android/app/build/
+/android/*.iml
+/local.properties
+
+# iOS
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/Flutter.podspec
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/ephemeral/
+*.xcworkspace
+*.xcuserstate
+*.xcconfig
+
+# Linux
+/linux/flutter/ephemeral/
+build/linux/
+
+# macOS
+/macos/Flutter/ephemeral/
+build/macos/
+
+# Windows
+/windows/flutter/ephemeral/
+build/windows/
+
+# Web
+/.dart_tool/
+build/web/
+
+# Visual Studio Code
+/.vscode/
+*.code-workspace
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+
+# VS Code Extension
+.history/
+
+# Misc
+*.log
+*.tmp
+*.swp
+*.swo
+Thumbs.db
+desktop.ini
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.apk
+*.aab
+
+# Generated Flutter plugin registrant
+generated_plugin_registrant.dart
+
+# Git LFS config (if you start using it)
+.gitattributes
