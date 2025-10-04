@@ -283,7 +283,23 @@ class _ChatScreenState extends State<ChatScreen> {
       await ConversationService.saveContext();
       AppLogger.i('Conversation summarization completed successfully');
     } catch (e) {
-      AppLogger.e('Summarization failed', e);
+      // Log the UI error message for debugging
+      AppLogger.e('Summarization failed - showing user-friendly message in chat: $e');
+
+      // Show user-friendly error message as AI response in chat
+      if (mounted) {
+        String errorMessage = "I'm so sorry, but your hourly limit is reached.";
+        setState(() {
+          _messages.clear();
+          _messages.add(ChatMessage(
+            text: errorMessage,
+            isUser: false,
+            timestamp: DateTime.now(),
+            isLoading: false,
+          ));
+        });
+      }
+
       rethrow;
     }
   }

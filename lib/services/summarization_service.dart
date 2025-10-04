@@ -60,7 +60,15 @@ class SummarizationService {
         AppLogger.i('Conversation summarization completed successfully, length: ${summary.length}');
         return summary;
       } else {
-        AppLogger.e('Summarization API request failed with status: ${response.statusCode}');
+        // Log the original technical error for debugging
+        AppLogger.e('Summarization API request failed with status: ${response.statusCode} - ${response.body}');
+
+        // Check for hourly limit exceeded (402 status)
+        if (response.statusCode == 402) {
+          AppLogger.e('Hourly usage limit reached - 402 error from summarization API');
+          throw Exception("I'm so sorry, but your hourly limit is reached.");
+        }
+
         throw Exception('Failed to get summarization: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
