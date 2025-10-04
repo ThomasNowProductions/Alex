@@ -1,4 +1,5 @@
 /// Model representing the entire conversation context including messages and summary
+library;
 import 'conversation_message.dart';
 
 /// Model representing the entire conversation context including messages and summary

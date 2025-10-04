@@ -54,9 +54,10 @@ class ChatMessage extends StatelessWidget {
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.8,
               ),
-              child: MarkdownBody(
-                data: text,
-                styleSheet: MarkdownStyleSheet(
+              child: Center(
+                child: MarkdownBody(
+                  data: text,
+                  styleSheet: MarkdownStyleSheet(
                   // Base text style matching the original design
                   p: GoogleFonts.playfairDisplay(
                     fontSize: 22,
@@ -181,6 +182,7 @@ class ChatMessage extends StatelessWidget {
                   ),
                 ),
                 selectable: true, // Keep text selectable like before
+                ),
               ),
             ),
         ],

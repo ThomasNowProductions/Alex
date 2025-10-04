@@ -1,4 +1,5 @@
 /// Application-wide constants
+library;
 import 'package:flutter/material.dart';
 
 /// Application-wide constants
