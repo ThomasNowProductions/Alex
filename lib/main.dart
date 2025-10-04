@@ -3,9 +3,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'components/chat_screen.dart';
 import 'constants/app_theme.dart';
 import 'constants/app_constants.dart';
+import 'utils/logger.dart';
 
 void main() async {
   await dotenv.load(fileName: AppConstants.envFileName);
+  AppLogger.init();
   runApp(const FraintedApp());
 }
 

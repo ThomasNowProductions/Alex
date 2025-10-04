@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/conversation_message.dart';
+import '../utils/logger.dart';
 
 class SummarizationService {
   static String get _baseUrl => dotenv.env['OLLAMA_BASE_URL'] ?? 'https://ollama.com/api';
@@ -9,17 +10,24 @@ class SummarizationService {
   static String get _model => dotenv.env['OLLAMA_MODEL'] ?? 'deepseek-v3.1:671b';
 
   static Future<String> summarizeConversation(List<ConversationMessage> messages) async {
+    AppLogger.d('Starting conversation summarization');
     if (_apiKey.isEmpty || _apiKey.contains('your-ollama-api-key-here')) {
+      AppLogger.w('OLLAMA_API_KEY not properly configured for summarization');
       throw Exception('Please set your OLLAMA_API_KEY in assets/.env file');
     }
 
     if (messages.isEmpty) {
+      AppLogger.i('No messages to summarize, returning default message');
       return 'No conversation to summarize.';
     }
 
     try {
+      AppLogger.d('Formatting ${messages.length} messages for summarization');
       // Create a formatted conversation string for the summarizer
       final conversationText = _formatConversationForSummary(messages);
+
+      AppLogger.d('API POST $_baseUrl/chat');
+      final stopwatch = Stopwatch()..start();
 
       final response = await http.post(
         Uri.parse('$_baseUrl/chat'),
@@ -43,18 +51,26 @@ class SummarizationService {
         }),
       );
 
+      stopwatch.stop();
+      AppLogger.i('Summarization API call took ${stopwatch.elapsed.inMilliseconds}ms');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['message']['content'].trim();
+        final summary = data['message']['content'].trim();
+        AppLogger.i('Conversation summarization completed successfully, length: ${summary.length}');
+        return summary;
       } else {
+        AppLogger.e('Summarization API request failed with status: ${response.statusCode}');
         throw Exception('Failed to get summarization: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
+      AppLogger.e('Error during conversation summarization', e);
       throw Exception('Error connecting to summarization API: $e');
     }
   }
 
   static String _formatConversationForSummary(List<ConversationMessage> messages) {
+    AppLogger.d('Formatting ${messages.length} messages for summarization');
     final buffer = StringBuffer();
     buffer.writeln('Please summarize the following conversation. Extract key facts, topics discussed, user preferences, important details, and any recurring themes.\n\n');
 
@@ -76,7 +92,9 @@ class SummarizationService {
     buffer.writeln('- Recurring themes or patterns in the conversation');
     buffer.writeln('- Important context that might be relevant for future conversations');
 
-    return buffer.toString();
+    final formattedText = buffer.toString();
+    AppLogger.d('Conversation formatted for summarization, total length: ${formattedText.length}');
+    return formattedText;
   }
 
   static String _getSummarizationPrompt() {

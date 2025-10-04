@@ -9,6 +9,7 @@ import '../services/summarization_service.dart';
 import '../utils/platform_utils.dart';
 import '../utils/permission_utils.dart';
 import '../utils/speech_utils.dart';
+import '../utils/logger.dart';
 import '../constants/app_constants.dart';
 
 /// Main chat screen component that handles the chat interface
@@ -48,21 +49,27 @@ class _ChatScreenState extends State<ChatScreen> {
 
   /// Initialize all services
   Future<void> _initializeServices() async {
+    AppLogger.i('Initializing chat screen services');
     await _initializeConversationService();
     await _initializeSpeech();
+    AppLogger.i('Chat screen services initialized');
   }
 
   /// Initialize conversation service
   Future<void> _initializeConversationService() async {
+    AppLogger.d('Initializing conversation service');
     try {
       await ConversationService.loadContext();
+      AppLogger.i('Conversation service initialized successfully');
     } catch (e) {
+      AppLogger.e('Failed to initialize conversation service', e);
       // Error handled in service
     }
   }
 
   /// Initialize speech recognition
   Future<void> _initializeSpeech() async {
+    AppLogger.d('Initializing speech recognition');
     try {
       _speech = stt.SpeechToText();
 
@@ -70,6 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (PlatformUtils.isAndroid) {
         bool hasPermission = await PermissionUtils.requestMicrophonePermission(context);
         if (!hasPermission) {
+          AppLogger.w('Microphone permission denied on Android');
           _speechEnabled = false;
           setState(() {});
           return;
@@ -81,15 +89,18 @@ class _ChatScreenState extends State<ChatScreen> {
         onStatus: _onSpeechStatus,
       );
 
+      AppLogger.i('Speech recognition initialized - enabled: $_speechEnabled');
       setState(() {});
 
       // Show platform-specific messages if needed
       if (!_speechEnabled && PlatformUtils.isLinux) {
+        AppLogger.i('Speech not supported on Linux platform');
         WidgetsBinding.instance.addPostFrameCallback((_) {
           SpeechUtils.showPlatformNotSupportedMessage(context);
         });
       }
     } catch (e) {
+      AppLogger.e('Failed to initialize speech recognition', e);
       _speechEnabled = false;
       setState(() {});
     }
@@ -98,6 +109,8 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Send a message
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
+
+    AppLogger.userAction('Send message');
 
     // Stop speech recognition if it's active
     if (_isListening) {
@@ -123,6 +136,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     try {
+      AppLogger.d('Getting AI response for user message');
       // Get AI response
       final aiResponse = await _getAIResponse(message);
 
@@ -138,7 +152,10 @@ class _ChatScreenState extends State<ChatScreen> {
           isLoading: false,
         ));
       });
+
+      AppLogger.i('AI response sent to user, length: ${aiResponse.length}');
     } catch (e) {
+      AppLogger.e('Failed to get AI response', e);
       setState(() {
         _messages.clear();
         _messages.add(ChatMessage(
@@ -166,6 +183,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _startListening() async {
     if (!_speechEnabled || _isListening) return;
 
+    AppLogger.userAction('Start speech recognition');
     setState(() {
       _isListening = true;
       _lastWords = '';
@@ -182,6 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _stopListening() async {
     if (!_isListening) return;
 
+    AppLogger.userAction('Stop speech recognition');
     setState(() {
       _isListening = false;
     });
@@ -212,6 +231,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     }
 
+    AppLogger.d('Speech recognition result: ${recognizedWords.length} characters');
     setState(() {
       _lastWords = recognizedWords;
       _messageController.text = recognizedWords;
@@ -242,9 +262,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if ((messageCount > AppConstants.summarizationThreshold && context.summary.isEmpty) ||
         messageCount > AppConstants.summarizationUpdateThreshold) {
+      AppLogger.i('Triggering conversation summarization - message count: $messageCount');
       try {
         await _performSummarization();
       } catch (e) {
+        AppLogger.e('Summarization failed during check', e);
         // Don't break chat flow on summarization error
       }
     }
@@ -254,10 +276,13 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _performSummarization() async {
     try {
       final messages = ConversationService.context.messages;
+      AppLogger.d('Performing summarization for ${messages.length} messages');
       final summary = await SummarizationService.summarizeConversation(messages);
       ConversationService.updateSummary(summary);
       await ConversationService.saveContext();
+      AppLogger.i('Conversation summarization completed successfully');
     } catch (e) {
+      AppLogger.e('Summarization failed', e);
       rethrow;
     }
   }

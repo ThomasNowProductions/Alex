@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../models/conversation_context.dart';
 import 'conversation_service.dart';
+import '../utils/logger.dart';
 
 class OllamaService {
   static String get _baseUrl => dotenv.env['OLLAMA_BASE_URL'] ?? 'https://ollama.com/api';
@@ -11,11 +12,15 @@ class OllamaService {
   static String get _model => dotenv.env['OLLAMA_MODEL'] ?? 'deepseek-v3.1:671b';
 
   static Future<String> _loadSystemPrompt() async {
+    AppLogger.d('Loading system prompt from assets/system_prompt.json');
     try {
       final String response = await rootBundle.loadString('assets/system_prompt.json');
       final data = jsonDecode(response);
-      return data['systemPrompt'] ?? '';
+      final systemPrompt = data['systemPrompt'] ?? '';
+      AppLogger.i('System prompt loaded successfully');
+      return systemPrompt;
     } catch (e) {
+      AppLogger.e('Failed to load system prompt', e);
       throw Exception('Failed to load system prompt: $e');
     }
   }
@@ -60,20 +65,28 @@ class OllamaService {
   }
 
   static Future<String> getCompletion(String prompt) async {
+    AppLogger.d('Starting AI completion request');
     if (_apiKey.isEmpty || _apiKey.contains('your-ollama-api-key-here')) {
+      AppLogger.w('OLLAMA_API_KEY not properly configured');
       throw Exception('Please set your OLLAMA_API_KEY in assets/.env file');
     }
 
     try {
       // Load system prompt from JSON file
+      AppLogger.d('Loading system prompt');
       final baseSystemPrompt = await _loadSystemPrompt();
 
       // Get conversation context
+      AppLogger.d('Building conversation context');
       final conversationContext = ConversationService.context;
       final contextPrompt = _buildContextPrompt(conversationContext);
 
       // Combine system prompt with conversation context
       final enhancedSystemPrompt = '$baseSystemPrompt\n\n$contextPrompt';
+      AppLogger.d('Enhanced system prompt created, length: ${enhancedSystemPrompt.length}');
+
+      AppLogger.d('API POST $_baseUrl/chat');
+      final stopwatch = Stopwatch()..start();
 
       final response = await http.post(
         Uri.parse('$_baseUrl/chat'),
@@ -97,13 +110,20 @@ class OllamaService {
         }),
       );
 
+      stopwatch.stop();
+      AppLogger.i('AI API call took ${stopwatch.elapsed.inMilliseconds}ms');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['message']['content'].trim();
+        final content = data['message']['content'].trim();
+        AppLogger.i('AI completion successful, status: ${response.statusCode}, response length: ${content.length}');
+        return content;
       } else {
+        AppLogger.e('AI API request failed with status: ${response.statusCode}');
         throw Exception('Failed to get AI response: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
+      AppLogger.e('Error connecting to Ollama Cloud API', e);
       throw Exception('Error connecting to Ollama Cloud API: $e');
     }
   }
