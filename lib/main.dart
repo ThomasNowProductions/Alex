@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'services/ollama_service.dart';
+import 'services/conversation_service.dart';
+import 'services/summarization_service.dart';
 import 'dart:async';
 import 'dart:io' show Platform;
 
@@ -67,6 +69,9 @@ class _ChatScreenState extends State<ChatScreen> {
       await _stopListening();
     }
 
+    // Save user message to conversation history
+    ConversationService.addMessage(message, true);
+
     // Clear input immediately
     _messageController.clear();
     // Request focus to keep input field focused
@@ -85,8 +90,11 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     try {
-      // Get AI response from Ollama Cloud API
+      // Get AI response from Ollama Cloud API with conversation context
       final aiResponse = await _getAIResponse(message);
+
+      // Save AI response to conversation history
+      ConversationService.addMessage(aiResponse, false);
 
       setState(() {
         // Only keep the most recent response
@@ -113,11 +121,31 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _isLoading = false;
       });
+      // Save conversation context after each exchange
+      await ConversationService.saveContext();
+
+      // Check if we should trigger summarization after this exchange
+      await _checkAndTriggerSummarization();
     }
   }
 
   Future<String> _getAIResponse(String userMessage) async {
     return await OllamaService.getCompletion(userMessage);
+  }
+
+  // Conversation service initialization
+  Future<void> _initializeConversationService() async {
+    print('=== INITIALIZING CONVERSATION SERVICE ===');
+    try {
+      await ConversationService.loadContext();
+      print('✅ Conversation context loaded successfully');
+      print('📊 Loaded ${ConversationService.context.messages.length} previous messages');
+      if (ConversationService.context.summary.isNotEmpty) {
+        print('📋 Found existing summary');
+      }
+    } catch (e) {
+      print('❌ Error initializing conversation service: $e');
+    }
   }
 
   // Permission methods
@@ -534,8 +562,13 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    print('=== ChatScreen initState - STARTING SPEECH RECOGNITION INITIALIZATION ===');
+    print('=== ChatScreen initState - STARTING INITIALIZATION ===');
     print('Platform: ${Platform.operatingSystem}');
+
+    // Initialize conversation service
+    _initializeConversationService();
+
+    // Initialize speech recognition
     print('Current _speechEnabled state: $_speechEnabled');
     _initializeSpeech();
 
@@ -562,7 +595,82 @@ class _ChatScreenState extends State<ChatScreen> {
     _focusNode.dispose();
     _messageController.dispose();
     _speech.stop();
+
+    // Trigger summarization when app is closed if we have enough conversation
+    _triggerSummarizationIfNeeded();
+
     super.dispose();
+  }
+
+  Future<void> _triggerSummarizationIfNeeded() async {
+    final context = ConversationService.context;
+    final messageCount = context.messages.length;
+
+    print('=== CHECKING SUMMARIZATION TRIGGER ===');
+    print('Total messages: $messageCount');
+    print('Has summary: ${context.summary.isNotEmpty}');
+
+    // Trigger summarization if:
+    // 1. We have more than 20 messages AND no summary yet, OR
+    // 2. We have more than 50 messages (update existing summary), OR
+    // 3. App is being closed and we have any conversation
+    bool shouldSummarize = false;
+    if (messageCount > 20 && context.summary.isEmpty) {
+      shouldSummarize = true;
+      print('Trigger: More than 20 messages and no summary');
+    } else if (messageCount > 50) {
+      shouldSummarize = true;
+      print('Trigger: More than 50 messages, updating summary');
+    } else if (messageCount > 0) {
+      shouldSummarize = true;
+      print('Trigger: App closing with conversation');
+    }
+
+    if (shouldSummarize) {
+      print('🚀 Starting summarization process...');
+      try {
+        await _performSummarization();
+        print('✅ Summarization completed successfully');
+      } catch (e) {
+        print('❌ Summarization failed: $e');
+      }
+    } else {
+      print('⏭️ No summarization needed');
+    }
+  }
+
+  Future<void> _performSummarization() async {
+    try {
+      final messages = ConversationService.context.messages;
+      print('📝 Summarizing ${messages.length} messages...');
+
+      final summary = await SummarizationService.summarizeConversation(messages);
+      ConversationService.updateSummary(summary);
+
+      await ConversationService.saveContext();
+      print('💾 Conversation context saved with summary');
+    } catch (e) {
+      print('❌ Error during summarization: $e');
+      throw e;
+    }
+  }
+
+  Future<void> _checkAndTriggerSummarization() async {
+    final context = ConversationService.context;
+    final messageCount = context.messages.length;
+
+    // Trigger summarization if we have more than 10 messages and no summary yet
+    // Or if we have more than 25 messages (update existing summary)
+    if ((messageCount > 10 && context.summary.isEmpty) || messageCount > 25) {
+      print('📊 Triggering summarization after $messageCount messages...');
+      try {
+        await _performSummarization();
+        print('✅ Summarization completed');
+      } catch (e) {
+        print('❌ Summarization failed: $e');
+        // Don't throw here - we don't want to break the chat flow
+      }
+    }
   }
 
   @override
