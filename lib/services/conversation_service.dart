@@ -1,56 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-
-class ConversationMessage {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-
-  ConversationMessage({
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'text': text,
-    'isUser': isUser,
-    'timestamp': timestamp.toIso8601String(),
-  };
-
-  factory ConversationMessage.fromJson(Map<String, dynamic> json) => ConversationMessage(
-    text: json['text'],
-    isUser: json['isUser'],
-    timestamp: DateTime.parse(json['timestamp']),
-  );
-}
-
-class ConversationContext {
-  final List<ConversationMessage> messages;
-  final String summary;
-  final DateTime lastUpdated;
-
-  ConversationContext({
-    required this.messages,
-    required this.summary,
-    required this.lastUpdated,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'messages': messages.map((m) => m.toJson()).toList(),
-    'summary': summary,
-    'lastUpdated': lastUpdated.toIso8601String(),
-  };
-
-  factory ConversationContext.fromJson(Map<String, dynamic> json) => ConversationContext(
-    messages: (json['messages'] as List<dynamic>?)
-        ?.map((m) => ConversationMessage.fromJson(m as Map<String, dynamic>))
-        .toList() ?? [],
-    summary: json['summary'] ?? '',
-    lastUpdated: DateTime.parse(json['lastUpdated']),
-  );
-}
+import '../models/conversation_message.dart';
+import '../models/conversation_context.dart';
 
 class ConversationService {
   static const String _fileName = 'conversation_context.json';
