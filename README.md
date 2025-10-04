@@ -92,7 +92,7 @@ lib/
    ```env
    OLLAMA_BASE_URL=https://ollama.com/api
    OLLAMA_API_KEY=your-actual-api-key-here
-   OLLAMA_MODEL=gpt-oss:120b-cloud
+   OLLAMA_MODEL=deepseek-v3.1:671b
    ```
 
 4. **Run the application**
@@ -125,7 +125,9 @@ lib/
 |----------|-------------|---------|----------|
 | `OLLAMA_BASE_URL` | Ollama Cloud API base URL | `https://ollama.com/api` | No |
 | `OLLAMA_API_KEY` | Your Ollama Cloud API key | None | Yes |
-| `OLLAMA_MODEL` | AI model to use | `gpt-oss:120b-cloud` | No |
+| `OLLAMA_MODEL` | AI model to use | `deepseek-v3.1:671b` | No |
+
+> **💡 Recommendation**: We recommend using `deepseek-v3.1:671b` as your AI model for optimal performance and response quality. This model provides excellent context understanding and personality consistency for the Alex AI Companion experience.
 
 ### App Constants
 

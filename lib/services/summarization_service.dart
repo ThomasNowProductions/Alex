@@ -6,7 +6,7 @@ import '../models/conversation_message.dart';
 class SummarizationService {
   static String get _baseUrl => dotenv.env['OLLAMA_BASE_URL'] ?? 'https://ollama.com/api';
   static String get _apiKey => dotenv.env['OLLAMA_API_KEY'] ?? '';
-  static String get _model => dotenv.env['OLLAMA_MODEL'] ?? 'gpt-oss:120b-cloud';
+  static String get _model => dotenv.env['OLLAMA_MODEL'] ?? 'deepseek-v3.1:671b';
 
   static Future<String> summarizeConversation(List<ConversationMessage> messages) async {
     if (_apiKey.isEmpty || _apiKey.contains('your-ollama-api-key-here')) {

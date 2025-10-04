@@ -161,7 +161,9 @@ class ConversationContext {
 |----------|-------------|----------|---------|
 | `OLLAMA_BASE_URL` | API base URL | No | `https://ollama.com/api` |
 | `OLLAMA_API_KEY` | Authentication key | Yes | - |
-| `OLLAMA_MODEL` | AI model selection | No | `gpt-oss:120b-cloud` |
+| `OLLAMA_MODEL` | AI model selection | No | `deepseek-v3.1:671b` |
+
+> **💡 Recommendation**: We recommend using `deepseek-v3.1:671b` as your AI model for optimal performance and response quality. This model provides excellent context understanding and personality consistency for the Alex AI Companion experience.
 
 ### System Prompt
 
