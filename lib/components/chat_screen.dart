@@ -363,9 +363,6 @@ class _ChatScreenState extends State<ChatScreen> {
                     if (_speechEnabled)
                       _buildMicrophoneButton(),
                     if (_speechEnabled) const SizedBox(width: 8),
-                    // Info icon for unsupported platforms
-                    if (!_speechEnabled && PlatformUtils.isLinux)
-                      _buildInfoButton(),
                     // Send button
                     _buildSendButton(),
                   ],
@@ -466,23 +463,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  /// Build info button for unsupported platforms
-  Widget _buildInfoButton() {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      child: IconButton(
-        onPressed: () {
-          SpeechUtils.showPlatformNotSupportedMessage(context);
-        },
-        icon: Icon(
-          Icons.info_outline,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-          size: 20,
-        ),
-        tooltip: 'Speech recognition not available on ${PlatformUtils.platformName}',
-      ),
-    );
-  }
 
   /// Build send button
   Widget _buildSendButton() {
