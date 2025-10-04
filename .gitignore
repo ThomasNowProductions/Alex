@@ -75,3 +75,7 @@ generated_plugin_registrant.dart
 
 # Git LFS config (if you start using it)
 .gitattributes
+
+# Local environment files
+# Ignore the project's environment file containing secrets
+assets/.env
