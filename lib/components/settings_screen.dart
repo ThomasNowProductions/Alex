@@ -46,144 +46,252 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildContent() {
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       children: [
-        _buildSectionCard(
-          title: 'Settings',
-          icon: Icons.settings_outlined,
-          children: [
-            _buildThemeModeSetting(),
-            const SizedBox(height: 24),
-            _buildDeleteHistoryButton(),
-          ],
-        ),
+        // Settings sections
+        _buildThemeSection(),
+        const SizedBox(height: 24),
+        _buildDataSection(),
       ],
     );
   }
 
-  Widget _buildSectionCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
+
+  Widget _buildThemeSection() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.secondary.withOpacity(0.15),
-            Theme.of(context).colorScheme.primary.withOpacity(0.08),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
-          width: 2,
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-            blurRadius: 20,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
             spreadRadius: 2,
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.secondary,
-                        Theme.of(context).colorScheme.primary,
-                      ],
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  width: 50,
-                  height: 50,
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 26,
-                  ),
+                Icon(
+                  Icons.palette_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Text(
-                  title,
+                  'Appearance',
                   style: GoogleFonts.playfairDisplay(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            ...children,
-          ],
-        ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: _buildThemeModeSetting(),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _buildDataSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.storage_outlined,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Data Management',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: _buildDeleteHistoryButton(),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildThemeModeSetting() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Theme Mode',
+          'Theme Preference',
           style: GoogleFonts.playfairDisplay(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
+        Text(
+          'Choose how the app looks and feels',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 13,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
             ),
           ),
           child: Column(
             children: [
-              _buildRadioOption(
+              _buildThemeOption(
                 title: 'System',
+                subtitle: 'Follow system theme',
                 value: 'system',
-                groupValue: SettingsService.themeMode,
-                onChanged: (value) => _updateSetting('themeMode', value!),
+                icon: Icons.smartphone_outlined,
               ),
               Divider(
                 height: 1,
                 color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
               ),
-              _buildRadioOption(
+              _buildThemeOption(
                 title: 'Light',
+                subtitle: 'Always use light theme',
                 value: 'light',
-                groupValue: SettingsService.themeMode,
-                onChanged: (value) => _updateSetting('themeMode', value!),
+                icon: Icons.light_mode_outlined,
               ),
               Divider(
                 height: 1,
                 color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
               ),
-              _buildRadioOption(
+              _buildThemeOption(
                 title: 'Dark',
+                subtitle: 'Always use dark theme',
                 value: 'dark',
-                groupValue: SettingsService.themeMode,
-                onChanged: (value) => _updateSetting('themeMode', value!),
+                icon: Icons.dark_mode_outlined,
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildThemeOption({
+    required String title,
+    required String subtitle,
+    required String value,
+    required IconData icon,
+  }) {
+    final isSelected = SettingsService.themeMode == value;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+            : null,
+      ),
+      child: ListTile(
+        leading: Container(
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                : Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            ),
+          ),
+          width: 40,
+          height: 40,
+          child: Icon(
+            icon,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            size: 20,
+          ),
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.playfairDisplay(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            height: 1.3,
+          ),
+        ),
+        trailing: isSelected
+            ? Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                width: 24,
+                height: 24,
+                child: const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              )
+            : null,
+        onTap: () => _updateSetting('themeMode', value),
+      ),
     );
   }
 
@@ -193,40 +301,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Conversation History',
+          'Clear Data',
           style: GoogleFonts.playfairDisplay(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Text(
-          'Delete all conversation history and start fresh',
+          'Permanently delete all conversation history. This action cannot be undone.',
           style: GoogleFonts.playfairDisplay(
-            fontSize: 12,
+            fontSize: 13,
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            height: 1.4,
           ),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
+        const SizedBox(height: 20),
+        Container(
           width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.2),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
           child: ElevatedButton.icon(
             onPressed: _showDeleteConfirmationDialog,
-            icon: const Icon(Icons.delete_forever_outlined),
+            icon: const Icon(Icons.warning_amber_outlined),
             label: Text(
-              'Delete All History',
+              'Delete All Conversations',
               style: GoogleFonts.playfairDisplay(
                 fontWeight: FontWeight.w600,
+                fontSize: 15,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.red.shade600,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              elevation: 0,
             ),
           ),
         ),
@@ -234,39 +355,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildRadioOption({
-    required String title,
-    required String value,
-    required String groupValue,
-    required Function(String?) onChanged,
-  }) {
-    final isSelected = value == groupValue;
-    return Container(
-      decoration: BoxDecoration(
-        color: isSelected
-            ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-            : null,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        title: Text(
-          title,
-          style: GoogleFonts.playfairDisplay(
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        trailing: isSelected
-            ? Icon(
-                Icons.check_circle,
-                color: Theme.of(context).colorScheme.primary,
-                size: 20,
-              )
-            : null,
-        onTap: () => onChanged(value),
-      ),
-    );
-  }
 
   void _updateSetting(String key, dynamic value) {
     setState(() {
