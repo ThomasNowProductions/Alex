@@ -50,6 +50,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Settings sections
         _buildThemeSection(),
         const SizedBox(height: 24),
+        _buildSecuritySection(),
+        const SizedBox(height: 24),
         _buildDataSection(),
       ],
     );
@@ -103,6 +105,143 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSecuritySection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.security_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Security',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: _buildPinLockSetting(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPinLockSetting() {
+    final isPinLockEnabled = SettingsService.pinLockEnabled;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'PIN Lock',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isPinLockEnabled
+                        ? 'App is protected with a PIN code'
+                        : 'Secure your app with a 4-digit PIN',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: isPinLockEnabled,
+              onChanged: (value) {
+                if (value) {
+                  _showSetPinDialog();
+                } else {
+                  _showDisablePinDialog();
+                }
+              },
+            ),
+          ],
+        ),
+        if (isPinLockEnabled) ...[
+          const SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: _showChangePinDialog,
+              icon: const Icon(Icons.edit_outlined),
+              label: Text(
+                'Change PIN',
+                style: GoogleFonts.playfairDisplay(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -433,5 +572,255 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       }
     }
+  }
+
+  void _showSetPinDialog() {
+    String newPin = '';
+    String confirmPin = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Set PIN Lock',
+                style: GoogleFonts.playfairDisplay(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Enter a 4-digit PIN to secure your app',
+                    style: GoogleFonts.playfairDisplay(),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'New PIN',
+                      labelStyle: GoogleFonts.playfairDisplay(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: '1234',
+                    ),
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    obscureText: true,
+                    style: GoogleFonts.playfairDisplay(),
+                    onChanged: (value) => setState(() => newPin = value),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Confirm PIN',
+                      labelStyle: GoogleFonts.playfairDisplay(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: '1234',
+                    ),
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    obscureText: true,
+                    style: GoogleFonts.playfairDisplay(),
+                    onChanged: (value) => setState(() => confirmPin = value),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.playfairDisplay(),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: (newPin.length == 4 && newPin == confirmPin)
+                      ? () {
+                          SettingsService.setPinLock(newPin);
+                          Navigator.of(context).pop();
+                          _showSuccessSnackBar('PIN lock enabled successfully');
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  child: Text(
+                    'Set PIN',
+                    style: GoogleFonts.playfairDisplay(),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showDisablePinDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Disable PIN Lock?',
+            style: GoogleFonts.playfairDisplay(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to disable PIN lock? Your app will no longer require a PIN to access.',
+            style: GoogleFonts.playfairDisplay(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.playfairDisplay(),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                SettingsService.disablePinLock();
+                Navigator.of(context).pop();
+                _showSuccessSnackBar('PIN lock disabled');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                'Disable',
+                style: GoogleFonts.playfairDisplay(),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showChangePinDialog() {
+    String currentPin = '';
+    String newPin = '';
+    String confirmPin = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Change PIN',
+                style: GoogleFonts.playfairDisplay(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Current PIN',
+                      labelStyle: GoogleFonts.playfairDisplay(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    obscureText: true,
+                    style: GoogleFonts.playfairDisplay(),
+                    onChanged: (value) => setState(() => currentPin = value),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'New PIN',
+                      labelStyle: GoogleFonts.playfairDisplay(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: '1234',
+                    ),
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    obscureText: true,
+                    style: GoogleFonts.playfairDisplay(),
+                    onChanged: (value) => setState(() => newPin = value),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Confirm New PIN',
+                      labelStyle: GoogleFonts.playfairDisplay(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: '1234',
+                    ),
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    obscureText: true,
+                    style: GoogleFonts.playfairDisplay(),
+                    onChanged: (value) => setState(() => confirmPin = value),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.playfairDisplay(),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: (currentPin.length == 4 &&
+                           newPin.length == 4 &&
+                           newPin == confirmPin &&
+                           SettingsService.verifyPin(currentPin))
+                      ? () {
+                          SettingsService.setPinLock(newPin);
+                          Navigator.of(context).pop();
+                          _showSuccessSnackBar('PIN changed successfully');
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  child: Text(
+                    'Change PIN',
+                    style: GoogleFonts.playfairDisplay(),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.playfairDisplay(),
+        ),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 }

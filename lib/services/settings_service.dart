@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
+import 'package:crypto/crypto.dart';
 import '../utils/logger.dart';
 import 'conversation_service.dart';
 
@@ -9,9 +10,11 @@ import 'conversation_service.dart';
 class SettingsService {
   static const String _fileName = 'user_settings.json';
 
-  // Default settings - only theme preferences
+  // Default settings - theme and security preferences
   static const Map<String, dynamic> _defaultSettings = {
     'themeMode': 'system', // 'light', 'dark', 'system'
+    'pinLockEnabled': false, // Whether PIN lock is enabled
+    'pinCode': '', // Hashed PIN code for security
   };
 
   static Map<String, dynamic> _settings = Map.from(_defaultSettings);
@@ -87,8 +90,44 @@ class SettingsService {
     AppLogger.i('User settings reset to defaults');
   }
 
-  // Convenience getter for theme setting
+  // Convenience getters for settings
   static String get themeMode => getSetting('themeMode', 'system');
+  static bool get pinLockEnabled => getSetting('pinLockEnabled', false);
+  static String get pinCode => getSetting('pinCode', '');
+
+  /// Set PIN lock with hashed password
+  static void setPinLock(String pin) {
+    final hashedPin = _hashPin(pin);
+    setSetting('pinCode', hashedPin);
+    setSetting('pinLockEnabled', true);
+    saveSettings();
+    AppLogger.i('PIN lock enabled with new PIN');
+  }
+
+  /// Disable PIN lock
+  static void disablePinLock() {
+    setSetting('pinCode', '');
+    setSetting('pinLockEnabled', false);
+    saveSettings();
+    AppLogger.i('PIN lock disabled');
+  }
+
+  /// Verify PIN against stored hash
+  static bool verifyPin(String pin) {
+    if (!pinLockEnabled || pinCode.isEmpty) {
+      return true; // No PIN set, always allow access
+    }
+
+    final hashedInput = _hashPin(pin);
+    return hashedInput == pinCode;
+  }
+
+  /// Hash PIN using SHA-256 for secure storage
+  static String _hashPin(String pin) {
+    final bytes = utf8.encode(pin);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
 
   /// Clear all conversation history
   static Future<void> clearAllHistory() async {
