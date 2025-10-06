@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:markdown_widget/markdown_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Widget for displaying chat messages with markdown support
@@ -55,133 +55,8 @@ class ChatMessage extends StatelessWidget {
                 maxWidth: MediaQuery.of(context).size.width * 0.8,
               ),
               child: Center(
-                child: MarkdownBody(
+                child: MarkdownWidget(
                   data: text,
-                  styleSheet: MarkdownStyleSheet(
-                  // Base text style matching the original design
-                  p: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  // Bold text styling
-                  strong: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700, // Bold weight for **bold** text
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  // Italic text styling
-                  em: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.italic, // Italic style for *italic* text
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  // Disable headers by making them look like regular text
-                  h1: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  h2: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  h3: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  h4: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  h5: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  h6: GoogleFonts.playfairDisplay(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    height: 1.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-                selectable: true, // Keep text selectable like before
                 ),
               ),
             ),
