@@ -372,7 +372,7 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text(
           AppConstants.appName,
           style: GoogleFonts.playfairDisplay(
-            fontSize: 24,
+            fontSize: 32,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -451,12 +451,13 @@ class _ChatScreenState extends State<ChatScreen> {
                            decoration: InputDecoration(
                              hintText: 'Express yourself...',
                              hintStyle: GoogleFonts.playfairDisplay(
+                               fontSize: 20,
                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                              ),
                              border: InputBorder.none,
                              contentPadding: const EdgeInsets.symmetric(
                                horizontal: 20,
-                               vertical: 16,
+                               vertical: 18,
                              ),
                              suffixIcon: _speechEnabled ? Container(
                                margin: const EdgeInsets.only(right: 8),
@@ -476,7 +477,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                ),
                              ) : null,
                            ),
-                           style: GoogleFonts.playfairDisplay(),
+                           style: GoogleFonts.playfairDisplay(
+                             fontSize: 20,
+                           ),
                            onSubmitted: _sendMessage,
                            autofocus: true,
                          ),
@@ -529,7 +532,7 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 'Hey, whatsup?',
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 22,
+                  fontSize: 30,
                   fontWeight: FontWeight.w400,
                   color: Theme.of(context).colorScheme.onSurface,
                   height: 1.5,

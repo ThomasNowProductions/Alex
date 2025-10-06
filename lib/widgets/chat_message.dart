@@ -20,7 +20,7 @@ class ChatMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: const EdgeInsets.only(bottom: 32),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -33,30 +33,81 @@ class ChatMessage extends StatelessWidget {
                   color: isLoading
                       ? Colors.blue.withValues(alpha: 0.15)  // Blue when thinking
                       : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12), // Original color after response
-                  blurRadius: 40,
-                  spreadRadius: 5,
+                  blurRadius: 50,
+                  spreadRadius: 8,
                 ),
                 BoxShadow(
                   color: isLoading
                       ? Colors.blue.withValues(alpha: 0.08)  // Blue when thinking
                       : Theme.of(context).colorScheme.primary.withValues(alpha: 0.06), // Original color after response
-                  blurRadius: 80,
-                  spreadRadius: 15,
+                  blurRadius: 100,
+                  spreadRadius: 20,
                 ),
               ],
             ),
-            width: 180,
-            height: 180,
+            width: 220,
+            height: 220,
           ),
           // Text content - only show when there's actual text
           if (text.isNotEmpty)
-            Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.8,
-              ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.85,
+              height: 220, // Match the background circle height
               child: Center(
                 child: MarkdownWidget(
                   data: text,
+                  config: MarkdownConfig(
+                    configs: [
+                      PConfig(
+                        textStyle: GoogleFonts.playfairDisplay(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w400,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.6,
+                        ),
+                      ),
+                      H1Config(
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.4,
+                        ),
+                      ),
+                      H2Config(
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.4,
+                        ),
+                      ),
+                      H3Config(
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.4,
+                        ),
+                      ),
+                      CodeConfig(
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w400,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.5,
+                        ),
+                      ),
+                      PreConfig(
+                        textStyle: GoogleFonts.playfairDisplay(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w400,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
