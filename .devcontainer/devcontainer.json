@@ -52,7 +52,7 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "flutter pub get",
+  "postCreateCommand": "sudo -u vscode flutter pub get",
   "remoteUser": "vscode",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},

@@ -4,7 +4,8 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install basic dependencies
-RUN apt-get update && apt-get install -y \
+RUN echo "Installing basic dependencies..." && \
+    apt-get update && apt-get install -y \
     curl \
     wget \
     git \
@@ -42,7 +43,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Chrome for web development
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+RUN echo "Installing Chrome for web development..." && \
+    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
@@ -54,13 +56,15 @@ ENV FLUTTER_HOME=/flutter
 ENV PATH="$PATH:${FLUTTER_HOME}/bin"
 
 # Download and install Flutter
-RUN wget -O flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz \
+RUN echo "Downloading and installing Flutter ${FLUTTER_VERSION}..." && \
+    wget -O flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz \
     && mkdir -p /flutter \
     && tar -xf flutter.tar.xz -C /flutter --strip-components=1 \
     && rm flutter.tar.xz
 
 # Configure Flutter
-RUN git config --global --add safe.directory /flutter \
+RUN echo "Configuring Flutter..." && \
+    git config --global --add safe.directory /flutter \
     && flutter channel stable \
     && flutter upgrade \
     && flutter config --enable-web \
@@ -75,7 +79,8 @@ ENV PATH="$PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 # Download and install Android SDK using temporary directory approach
-RUN wget -O android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
+RUN echo "Downloading and installing Android SDK..." && \
+    wget -O android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
     && mkdir -p /tmp/android-sdk \
     && unzip -q android-sdk.zip -d /tmp/android-sdk \
     && mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools/latest \
@@ -84,14 +89,16 @@ RUN wget -O android-sdk.zip https://dl.google.com/android/repository/commandline
     && rm android-sdk.zip
 
 # Install Android SDK components
-RUN yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+RUN echo "Installing Android SDK components..." && \
+    yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
 # Create a non-root user
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-RUN groupadd --gid $USER_GID $USERNAME \
+RUN echo "Creating non-root user..." && \
+    groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
     && apt-get update \
     && apt-get install -y sudo \
@@ -100,7 +107,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && rm -rf /var/lib/apt/lists/*
 
 # Set ownership of Flutter and Android SDK
-RUN chown -R $USERNAME:$USERNAME ${FLUTTER_HOME} ${ANDROID_SDK_ROOT}
+RUN echo "Setting ownership of Flutter and Android SDK..." && \
+    chown -R $USERNAME:$USERNAME ${FLUTTER_HOME} ${ANDROID_SDK_ROOT}
 
 # Switch to non-root user
 USER $USERNAME
@@ -112,10 +120,12 @@ WORKDIR /workspace
 ENV PATH="$PATH:${FLUTTER_HOME}/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools"
 
 # Accept Android licenses (non-interactive)
-RUN yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses
+RUN echo "Accepting Android licenses..." && \
+    yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null 2>&1
 
 # Initialize Flutter
-RUN flutter doctor -v
+RUN echo "Running Flutter doctor..." && \
+    flutter doctor -v
 
 # Expose ports for web development
 EXPOSE 3000 8080 5000
