@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/settings_service.dart';
 
+// Add this import for keyboard key handling
+
 /// A dialog widget for PIN entry with a numeric keypad
 class PinEntryDialog extends StatefulWidget {
   final String title;
@@ -26,6 +28,8 @@ class _PinEntryDialogState extends State<PinEntryDialog> {
   String _enteredPin = '';
   String _errorMessage = '';
   bool _isVerifying = false;
+  final FocusNode _focusNode = FocusNode();
+  final TextEditingController _textController = TextEditingController();
 
   @override
   void initState() {
@@ -33,12 +37,16 @@ class _PinEntryDialogState extends State<PinEntryDialog> {
     // Show soft keyboard for PIN entry
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemChannels.textInput.invokeMethod('TextInput.show');
+      // Focus the text field for keyboard input
+      _focusNode.requestFocus();
     });
   }
 
   @override
   void dispose() {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
+    _focusNode.dispose();
+    _textController.dispose();
     super.dispose();
   }
 
@@ -163,6 +171,50 @@ class _PinEntryDialogState extends State<PinEntryDialog> {
                       );
                     }),
                   ),
+                ),
+
+                // Keyboard input support using RawKeyboardListener
+                RawKeyboardListener(
+                  focusNode: _focusNode,
+                  onKey: (RawKeyEvent event) {
+                    if (_isVerifying) return;
+
+                    if (event is RawKeyDownEvent) {
+                      final key = event.logicalKey;
+
+                      // Handle number keys
+                      if (key == LogicalKeyboardKey.digit0 || key == LogicalKeyboardKey.numpad0) {
+                        _addDigit('0');
+                      } else if (key == LogicalKeyboardKey.digit1 || key == LogicalKeyboardKey.numpad1) {
+                        _addDigit('1');
+                      } else if (key == LogicalKeyboardKey.digit2 || key == LogicalKeyboardKey.numpad2) {
+                        _addDigit('2');
+                      } else if (key == LogicalKeyboardKey.digit3 || key == LogicalKeyboardKey.numpad3) {
+                        _addDigit('3');
+                      } else if (key == LogicalKeyboardKey.digit4 || key == LogicalKeyboardKey.numpad4) {
+                        _addDigit('4');
+                      } else if (key == LogicalKeyboardKey.digit5 || key == LogicalKeyboardKey.numpad5) {
+                        _addDigit('5');
+                      } else if (key == LogicalKeyboardKey.digit6 || key == LogicalKeyboardKey.numpad6) {
+                        _addDigit('6');
+                      } else if (key == LogicalKeyboardKey.digit7 || key == LogicalKeyboardKey.numpad7) {
+                        _addDigit('7');
+                      } else if (key == LogicalKeyboardKey.digit8 || key == LogicalKeyboardKey.numpad8) {
+                        _addDigit('8');
+                      } else if (key == LogicalKeyboardKey.digit9 || key == LogicalKeyboardKey.numpad9) {
+                        _addDigit('9');
+                      }
+                      // Handle backspace
+                      else if (key == LogicalKeyboardKey.backspace) {
+                        _removeDigit();
+                      }
+                      // Handle Enter key for verification
+                      else if (key == LogicalKeyboardKey.enter && _enteredPin.length == 4) {
+                        _verifyPin();
+                      }
+                    }
+                  },
+                  child: const SizedBox.shrink(), // Invisible child
                 ),
 
                 // Error Message
