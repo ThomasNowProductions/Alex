@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/settings_service.dart';
-import '../services/conversation_service.dart';
 import '../utils/logger.dart';
 
 /// Settings screen for app preferences and configuration
