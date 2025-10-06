@@ -1,0 +1,69 @@
+{
+  "name": "Flutter Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.flutter",
+        "Dart-Code.dart-code",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode.vscode-typescript-next",
+        "formulahendry.auto-rename-tag",
+        "coenraads.bracket-pair-colorizer-2",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-eslint",
+        "kilocode.kilo-code"
+      ],
+      "settings": {
+        "dart.flutterSdkPath": "/flutter",
+        "dart.debugExternalLibraries": false,
+        "dart.debugSdkLibraries": false,
+        "files.associations": {
+          "*.arb": "json"
+        },
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll": "always"
+        }
+      }
+    }
+  },
+  "forwardPorts": [
+    3000,
+    8080,
+    5000
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "Web Development",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Debug Server",
+      "onAutoForward": "notify"
+    },
+    "5000": {
+      "label": "API Server",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "flutter pub get",
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/assets/.env,target=/workspace/assets/.env,type=bind"
+  ],
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined"
+  ]
+}
