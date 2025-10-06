@@ -161,7 +161,7 @@ class SummarizationService {
 
     if (formattedText.length > maxLength) {
       AppLogger.d('Conversation too long (${formattedText.length}), truncating for token efficiency');
-      return formattedText.substring(0, maxLength - 100) + '\n\n[Conversation truncated for efficiency]';
+      return '${formattedText.substring(0, maxLength - 100)}\n\n[Conversation truncated for efficiency]';
     }
 
     AppLogger.d('Conversation formatted for summarization, total length: ${formattedText.length}');
