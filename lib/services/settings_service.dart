@@ -15,6 +15,8 @@ class SettingsService {
     'themeMode': 'system', // 'light', 'dark', 'system'
     'pinLockEnabled': false, // Whether PIN lock is enabled
     'pinCode': '', // Hashed PIN code for security
+    'apiKeySource': 'inbuilt', // 'inbuilt' or 'custom'
+    'customApiKey': '', // Custom API key if using custom source
   };
 
   static Map<String, dynamic> _settings = Map.from(_defaultSettings);
@@ -94,6 +96,8 @@ class SettingsService {
   static String get themeMode => getSetting('themeMode', 'system');
   static bool get pinLockEnabled => getSetting('pinLockEnabled', false);
   static String get pinCode => getSetting('pinCode', '');
+  static String get apiKeySource => getSetting('apiKeySource', 'inbuilt');
+  static String get customApiKey => getSetting('customApiKey', '');
 
   /// Set PIN lock with hashed password
   static void setPinLock(String pin) {
@@ -127,6 +131,29 @@ class SettingsService {
     final bytes = utf8.encode(pin);
     final digest = sha256.convert(bytes);
     return digest.toString();
+  }
+
+  /// Set API key source (inbuilt or custom)
+  static void setApiKeySource(String source) {
+    setSetting('apiKeySource', source);
+    saveSettings();
+    AppLogger.i('API key source set to: $source');
+  }
+
+  /// Set custom API key
+  static void setCustomApiKey(String apiKey) {
+    setSetting('customApiKey', apiKey);
+    saveSettings();
+    AppLogger.i('Custom API key updated');
+  }
+
+  /// Get the current API key based on the selected source
+  static String getCurrentApiKey() {
+    if (apiKeySource == 'custom' && customApiKey.isNotEmpty) {
+      return customApiKey;
+    }
+    // Return inbuilt API key from .env (this would need to be handled by the calling service)
+    return 'INBUILT_API_KEY'; // Placeholder - OllamaService will handle reading from .env
   }
 
   /// Clear all conversation history

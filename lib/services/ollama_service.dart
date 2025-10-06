@@ -4,12 +4,21 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../models/conversation_context.dart';
 import 'conversation_service.dart';
+import 'settings_service.dart';
 import '../utils/logger.dart';
 
 class OllamaService {
   static String get _baseUrl => dotenv.env['OLLAMA_BASE_URL'] ?? 'https://ollama.com/api';
-  static String get _apiKey => dotenv.env['OLLAMA_API_KEY'] ?? '';
   static String get _model => dotenv.env['OLLAMA_MODEL'] ?? 'deepseek-v3.1:671b';
+
+  static String get _apiKey {
+    final apiKeySource = SettingsService.apiKeySource;
+    if (apiKeySource == 'custom') {
+      return SettingsService.customApiKey;
+    }
+    // Use inbuilt API key from .env
+    return dotenv.env['OLLAMA_API_KEY'] ?? '';
+  }
 
   static Future<String> _loadSystemPrompt() async {
     AppLogger.d('Loading system prompt from assets/system_prompt.json');

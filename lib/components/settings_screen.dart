@@ -50,6 +50,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Settings sections
         _buildThemeSection(),
         const SizedBox(height: 24),
+        _buildApiSection(),
+        const SizedBox(height: 24),
         _buildSecuritySection(),
         const SizedBox(height: 24),
         _buildDataSection(),
@@ -105,6 +107,358 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildApiSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.api_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'API Configuration',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: _buildApiKeySetting(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApiKeySetting() {
+    final apiKeySource = SettingsService.apiKeySource;
+    final hasCustomApiKey = SettingsService.customApiKey.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'API Key Source',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Choose whether to use the inbuilt API key or provide your own custom key',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 13,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.error.withOpacity(0.3),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.warning_amber_outlined,
+                color: Theme.of(context).colorScheme.error,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '⚠️ Inbuilt API key will hit rate limits much sooner. Custom keys provide higher limits and better performance.',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.error,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildApiSourceOption(
+                title: 'Inbuilt API Key',
+                subtitle: 'Use the pre-configured API key',
+                value: 'inbuilt',
+                icon: Icons.key_outlined,
+              ),
+              Divider(
+                height: 1,
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              ),
+              _buildApiSourceOption(
+                title: 'Custom API Key',
+                subtitle: hasCustomApiKey ? 'Custom key is configured' : 'Enter your own API key',
+                value: 'custom',
+                icon: Icons.edit_outlined,
+              ),
+            ],
+          ),
+        ),
+        if (apiKeySource == 'custom') ...[
+          const SizedBox(height: 20),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: _showCustomApiKeyDialog,
+              icon: const Icon(Icons.key),
+              label: Text(
+                hasCustomApiKey ? 'Update Custom API Key' : 'Set Custom API Key',
+                style: GoogleFonts.playfairDisplay(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildApiSourceOption({
+    required String title,
+    required String subtitle,
+    required String value,
+    required IconData icon,
+  }) {
+    final isSelected = SettingsService.apiKeySource == value;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+            : null,
+      ),
+      child: ListTile(
+        leading: Container(
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                : Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            ),
+          ),
+          width: 40,
+          height: 40,
+          child: Icon(
+            icon,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            size: 20,
+          ),
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.playfairDisplay(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            height: 1.3,
+          ),
+        ),
+        trailing: isSelected
+            ? Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+                width: 24,
+                height: 24,
+                child: const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              )
+            : null,
+        onTap: () => _updateSetting('apiKeySource', value),
+      ),
+    );
+  }
+
+  void _showCustomApiKeyDialog() {
+    final TextEditingController apiKeyController = TextEditingController(
+      text: SettingsService.customApiKey,
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Custom API Key',
+            style: GoogleFonts.playfairDisplay(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Enter your custom Ollama API key. You can get one from https://ollama.com/settings/keys',
+                style: GoogleFonts.playfairDisplay(),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.security_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '🔒 Your API key is stored securely on your device only and is never transmitted to our servers.',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.primary,
+                          height: 1.3,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: apiKeyController,
+                decoration: InputDecoration(
+                  labelText: 'API Key',
+                  labelStyle: GoogleFonts.playfairDisplay(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  hintText: 'Enter your API key...',
+                ),
+                style: GoogleFonts.playfairDisplay(),
+                obscureText: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.playfairDisplay(),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final apiKey = apiKeyController.text.trim();
+                if (apiKey.isNotEmpty) {
+                  SettingsService.setCustomApiKey(apiKey);
+                  Navigator.of(context).pop();
+                  _showSuccessSnackBar('Custom API key updated successfully');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              ),
+              child: Text(
+                'Save',
+                style: GoogleFonts.playfairDisplay(),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
