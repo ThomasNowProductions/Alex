@@ -17,10 +17,11 @@ class AppConstants {
   static const Duration snackbarAnimationDuration = Duration(milliseconds: 300);
   static const Duration snackbarShowDuration = Duration(seconds: 4);
 
-  /// Message limits for summarization
-  static const int summarizationThreshold = 10;
-  static const int summarizationUpdateThreshold = 25;
-  static const int maxMessagesForContext = 50;
+  /// Message limits for summarization (batched for cost efficiency)
+  static const int summarizationThreshold = 50;  // First summary after 50 messages
+  static const int summarizationUpdateThreshold = 100;  // Updates every 50 messages after that
+  static const int summarizationTimeIntervalMinutes = 30;  // Also trigger every 30 minutes
+  static const int maxMessagesForContext = 200;  // Increased to handle larger conversations
 
   /// UI spacing and sizing
   static const double chatBubbleMaxWidth = 0.8;

@@ -33,10 +33,15 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _speechEnabled = false;
   String _lastWords = '';
 
+  // Summarization batching variables
+  Timer? _summarizationTimer;
+  DateTime? _lastSummarizationTime;
+
   @override
   void initState() {
     super.initState();
     _initializeServices();
+    _startSummarizationTimer();
   }
 
   @override
@@ -44,6 +49,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _focusNode.dispose();
     _messageController.dispose();
     _speech.stop();
+    _summarizationTimer?.cancel();
     _triggerSummarizationIfNeeded();
     super.dispose();
   }
@@ -256,16 +262,37 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  /// Check and trigger summarization if needed
+  /// Check and trigger summarization if needed (improved batching logic)
   Future<void> _checkAndTriggerSummarization() async {
     final context = ConversationService.context;
     final messageCount = context.messages.length;
 
-    if ((messageCount > AppConstants.summarizationThreshold && context.summary.isEmpty) ||
-        messageCount > AppConstants.summarizationUpdateThreshold) {
-      AppLogger.i('Triggering conversation summarization - message count: $messageCount');
+    // Check if we should summarize based on message count thresholds
+    bool shouldSummarizeByCount = false;
+    if (context.summary.isEmpty) {
+      // No summary exists yet - wait for initial threshold
+      shouldSummarizeByCount = messageCount >= AppConstants.summarizationThreshold;
+    } else {
+      // Summary exists - wait for update threshold
+      shouldSummarizeByCount = messageCount >= AppConstants.summarizationUpdateThreshold;
+    }
+
+    // Check if we should summarize based on time interval
+    bool shouldSummarizeByTime = false;
+    if (_lastSummarizationTime != null) {
+      final timeSinceLastSummary = DateTime.now().difference(_lastSummarizationTime!);
+      shouldSummarizeByTime = timeSinceLastSummary.inMinutes >= AppConstants.summarizationTimeIntervalMinutes;
+    } else if (context.summary.isNotEmpty) {
+      // If we have a summary but no recorded time, assume it was recent
+      shouldSummarizeByTime = false;
+    }
+
+    // Only summarize if we have enough messages and meet either criteria
+    if (messageCount > 10 && (shouldSummarizeByCount || shouldSummarizeByTime)) {
+      AppLogger.i('Triggering batched summarization - messages: $messageCount, time-based: $shouldSummarizeByTime');
       try {
         await _performSummarization();
+        _lastSummarizationTime = DateTime.now();
       } catch (e) {
         AppLogger.e('Summarization failed during check', e);
         // Don't break chat flow on summarization error
@@ -277,11 +304,14 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _performSummarization() async {
     try {
       final messages = ConversationService.context.messages;
-      AppLogger.d('Performing summarization for ${messages.length} messages');
+      AppLogger.d('Performing batched summarization for ${messages.length} messages');
       final summary = await SummarizationService.summarizeConversation(messages);
       ConversationService.updateSummary(summary);
       await ConversationService.saveContext();
-      AppLogger.i('Conversation summarization completed successfully');
+      _lastSummarizationTime = DateTime.now();
+      AppLogger.i('Batched conversation summarization completed successfully');
+      // Note: _lastSummarizationTime is tracked in memory for this session
+      // In a production app, you might want to persist this to shared preferences
     } catch (e) {
       // Log the UI error message for debugging
       AppLogger.e('Summarization failed - showing user-friendly message in chat: $e');
@@ -309,22 +339,30 @@ class _ChatScreenState extends State<ChatScreen> {
     final context = ConversationService.context;
     final messageCount = context.messages.length;
 
-    bool shouldSummarize = false;
-    if (messageCount > 20 && context.summary.isEmpty) {
-      shouldSummarize = true;
-    } else if (messageCount > 50) {
-      shouldSummarize = true;
-    } else if (messageCount > 0) {
-      shouldSummarize = true;
-    }
-
-    if (shouldSummarize) {
+    // Always summarize any conversation when app closes (user's preference)
+    if (messageCount > 0) {
+      AppLogger.i('Triggering summarization on app close - $messageCount messages');
       try {
         await _performSummarization();
       } catch (e) {
-        // Ignore summarization errors on app close
+        AppLogger.e('Summarization failed on app close: $e');
+        // Ignore summarization errors on app close - don't break the close process
       }
+    } else {
+      AppLogger.d('No messages to summarize on app close');
     }
+  }
+
+  /// Start periodic timer for time-based summarization
+  void _startSummarizationTimer() {
+    _summarizationTimer = Timer.periodic(
+      const Duration(minutes: AppConstants.summarizationTimeIntervalMinutes),
+      (timer) {
+        if (mounted) {
+          _checkAndTriggerSummarization();
+        }
+      },
+    );
   }
 
   @override

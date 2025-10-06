@@ -1,13 +1,31 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import '../models/conversation_message.dart';
 import '../utils/logger.dart';
+
+// Simple cache entry for summarization results
+class _SummaryCache {
+  final String summary;
+  final DateTime timestamp;
+
+  _SummaryCache(this.summary, this.timestamp);
+
+  bool get isExpired => DateTime.now().difference(timestamp) > SummarizationService._cacheExpiry;
+}
 
 class SummarizationService {
   static String get _baseUrl => dotenv.env['OLLAMA_BASE_URL'] ?? 'https://ollama.com/api';
   static String get _apiKey => dotenv.env['OLLAMA_API_KEY'] ?? '';
   static String get _model => dotenv.env['OLLAMA_MODEL'] ?? 'deepseek-v3.1:671b';
+
+  // Simple in-memory cache to avoid redundant API calls
+  static final Map<String, _SummaryCache> _cache = {};
+  static const Duration _cacheExpiry = Duration(hours: 1);
+
+  // Cache for the summarization prompt
+  static String? _cachedPrompt;
 
   static Future<String> summarizeConversation(List<ConversationMessage> messages) async {
     AppLogger.d('Starting conversation summarization');
@@ -21,10 +39,30 @@ class SummarizationService {
       return 'No conversation to summarize.';
     }
 
+    // Clean up expired cache entries periodically
+    if (_cache.length > 10) {
+      _cleanupExpiredCache();
+    }
+
+    // Check cache first to avoid redundant API calls
+    final cacheKey = _generateCacheKey(messages);
+    if (_cache.containsKey(cacheKey)) {
+      final cached = _cache[cacheKey]!;
+      if (!cached.isExpired) {
+        AppLogger.i('Using cached summarization result');
+        return cached.summary;
+      } else {
+        _cache.remove(cacheKey);
+      }
+    }
+
     try {
       AppLogger.d('Formatting ${messages.length} messages for summarization');
       // Create a formatted conversation string for the summarizer
       final conversationText = _formatConversationForSummary(messages);
+
+      // Load the summarization prompt
+      final prompt = await _getSummarizationPrompt();
 
       AppLogger.d('API POST $_baseUrl/chat');
       final stopwatch = Stopwatch()..start();
@@ -40,7 +78,7 @@ class SummarizationService {
           'messages': [
             {
               'role': 'system',
-              'content': _getSummarizationPrompt()
+              'content': prompt
             },
             {
               'role': 'user',
@@ -58,6 +96,10 @@ class SummarizationService {
         final data = jsonDecode(response.body);
         final summary = data['message']['content'].trim();
         AppLogger.i('Conversation summarization completed successfully, length: ${summary.length}');
+
+        // Cache the result for future use
+        _cache[cacheKey] = _SummaryCache(summary, DateTime.now());
+
         return summary;
       } else {
         // Log the original technical error for debugging
@@ -77,59 +119,103 @@ class SummarizationService {
     }
   }
 
+  static List<ConversationMessage> _filterMessagesForSummarization(List<ConversationMessage> messages) {
+    return messages.where((message) {
+      // Filter out very short messages (less than 3 characters)
+      if (message.text.trim().length < 3) return false;
+
+      // Filter out common system/greeting messages that don't add value
+      final lowerText = message.text.toLowerCase();
+      if (lowerText.contains('hello') && message.text.length < 20) return false;
+      if (lowerText.contains('hi') && message.text.length < 15) return false;
+      if (lowerText.contains('thanks') && message.text.length < 20) return false;
+      if (lowerText.contains('thank you') && message.text.length < 25) return false;
+
+      return true;
+    }).toList();
+  }
+
   static String _formatConversationForSummary(List<ConversationMessage> messages) {
     AppLogger.d('Formatting ${messages.length} messages for summarization');
-    final buffer = StringBuffer();
-    buffer.writeln('Please summarize the following conversation. Extract key facts, topics discussed, user preferences, important details, and any recurring themes.\n\n');
 
-    for (var i = 0; i < messages.length; i++) {
-      final message = messages[i];
+    // Filter out very short messages and system messages to reduce token count
+    final filteredMessages = _filterMessagesForSummarization(messages);
+
+    if (filteredMessages.isEmpty) {
+      return 'No meaningful conversation to summarize.';
+    }
+
+    final buffer = StringBuffer();
+    buffer.writeln('Summarize this conversation:\n\n');
+
+    for (var i = 0; i < filteredMessages.length; i++) {
+      final message = filteredMessages[i];
       final speaker = message.isUser ? 'User' : 'Alex';
       buffer.writeln('$speaker: ${message.text}');
-
-      // Add timestamp for context
-      buffer.writeln('[${message.timestamp.toIso8601String()}]');
       buffer.writeln();
     }
 
-    buffer.writeln('\nPlease provide a comprehensive summary in JSON format that captures:');
-    buffer.writeln('- Key topics and themes discussed');
-    buffer.writeln('- Important facts and details mentioned');
-    buffer.writeln('- User preferences, interests, or goals');
-    buffer.writeln('- Any decisions made or plans discussed');
-    buffer.writeln('- Recurring themes or patterns in the conversation');
-    buffer.writeln('- Important context that might be relevant for future conversations');
-
+    // Apply length limit to prevent excessive token usage
     final formattedText = buffer.toString();
+    final maxLength = 4000; // Conservative limit for token efficiency
+
+    if (formattedText.length > maxLength) {
+      AppLogger.d('Conversation too long (${formattedText.length}), truncating for token efficiency');
+      return formattedText.substring(0, maxLength - 100) + '\n\n[Conversation truncated for efficiency]';
+    }
+
     AppLogger.d('Conversation formatted for summarization, total length: ${formattedText.length}');
     return formattedText;
   }
 
-  static String _getSummarizationPrompt() {
-    return '''
-You are an expert conversation analyst. Your task is to analyze conversations and extract meaningful insights.
+  static Future<String> _loadSummarizationPrompt() async {
+    try {
+      final jsonString = await rootBundle.loadString('assets/summarization_prompt.json');
+      final jsonMap = json.decode(jsonString);
+      return jsonMap['summarizationPrompt'] as String;
+    } catch (e) {
+      AppLogger.e('Failed to load summarization prompt from JSON, using fallback', e);
+      // Fallback prompt in case JSON file fails to load
+      return 'Analyze this conversation and return a JSON summary with key topics, important facts, user preferences, goals, and a brief summary paragraph. Focus on meaningful content only. Return only valid JSON.';
+    }
+  }
 
-Please provide a comprehensive summary of the conversation in valid JSON format with the following structure:
+  static Future<String> _getSummarizationPrompt() async {
+    // Load and cache the prompt if not already cached
+    if (_cachedPrompt == null) {
+      _cachedPrompt = await _loadSummarizationPrompt();
+      AppLogger.d('Loaded summarization prompt from JSON file');
+    }
+    return _cachedPrompt!;
+  }
 
-{
-  "keyTopics": ["topic1", "topic2", "topic3"],
-  "importantFacts": ["fact1", "fact2", "fact3"],
-  "userPreferences": ["preference1", "preference2"],
-  "goalsAndPlans": ["goal1", "goal2"],
-  "recurringThemes": ["theme1", "theme2"],
-  "contextualDetails": ["detail1", "detail2"],
-  "summary": "A concise paragraph summarizing the overall conversation"
-}
+  static String _generateCacheKey(List<ConversationMessage> messages) {
+    // Create a simple hash of message count and total content length
+    // This provides a good balance between cache efficiency and accuracy
+    final messageCount = messages.length;
+    final totalLength = messages.fold(0, (sum, msg) => sum + msg.text.length);
+    return '$messageCount:$totalLength';
+  }
 
-Guidelines:
-- Extract only meaningful, factual information
-- Focus on actionable insights and important context
-- Avoid including trivial or generic conversation elements
-- Be specific and concrete in your extractions
-- Ensure all arrays contain distinct, relevant items
-- The summary should be a coherent paragraph that captures the essence of the conversation
+  static void _cleanupExpiredCache() {
+    final expiredKeys = _cache.entries
+        .where((entry) => entry.value.isExpired)
+        .map((entry) => entry.key)
+        .toList();
 
-Return only valid JSON, no additional text or explanation.
-''';
+    for (final key in expiredKeys) {
+      _cache.remove(key);
+    }
+
+    if (expiredKeys.isNotEmpty) {
+      AppLogger.d('Cleaned up ${expiredKeys.length} expired cache entries');
+    }
+  }
+
+  /// Clear the cached prompt to force reload from JSON file
+  /// Useful for testing prompt changes or if JSON file is updated
+  static void clearPromptCache() {
+    _cachedPrompt = null;
+    AppLogger.d('Cleared summarization prompt cache');
   }
 }

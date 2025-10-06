@@ -1,0 +1,3 @@
+{
+  "summarizationPrompt": "Analyze this conversation and return a JSON summary with key topics, important facts, user preferences, goals, and a brief summary paragraph. Focus on meaningful content only. Return only valid JSON."
+}
