@@ -13,9 +13,5 @@
 		]
 	}
 },
-"postCreateCommand": [
-	"flutter upgrade --force",
-	"flutter precache --ios --web",
-	"flutter precache --linux --windows --macos"
-]
+"postCreateCommand": "bash -lc '.devcontainer/scripts/install-flutter.sh && flutter upgrade --force && flutter precache --ios --web && flutter precache --linux --windows --macos'"
 }
