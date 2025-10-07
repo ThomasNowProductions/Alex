@@ -1,0 +1,16 @@
+// For format details, see https://aka.ms/devcontainer.json.
+{
+"name": "Alex devcontainer",
+"image": "ghcr.io/thephaseless/devcontainers/flutter:latest",
+"features": {
+	"ghcr.io/nordcominc/devcontainer-features/android-sdk:1": {}
+},
+"customizations": {
+	"vscode": {
+		"extensions": [
+			"kilocode.kilo-code",
+			"rooveterinaryinc.roo-cline"
+		]
+	}
+}
+}
