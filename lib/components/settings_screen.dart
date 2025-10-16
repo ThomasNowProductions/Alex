@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/settings_service.dart';
+import '../services/summarization_service.dart';
 import '../utils/logger.dart';
 
 /// Settings screen for app preferences and configuration
@@ -826,7 +827,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: _showDeleteConfirmationDialog,
             icon: const Icon(Icons.warning_amber_outlined),
             label: Text(
-              'Delete All Conversations',
+              'Destroy Alex',
               style: GoogleFonts.playfairDisplay(
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
@@ -901,11 +902,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _deleteAllHistory() async {
     try {
       await SettingsService.clearAllHistory();
+      // Also clear all cached memories from summarization service
+      SummarizationService.clearAllMemories();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'All conversation history has been deleted',
+              'Alex has been destroyed and all memories wiped',
               style: GoogleFonts.playfairDisplay(),
             ),
             backgroundColor: Colors.green,
@@ -918,7 +921,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Failed to delete history. Please try again.',
+              'Failed to destroy Alex. Please try again.',
               style: GoogleFonts.playfairDisplay(),
             ),
             backgroundColor: Colors.red,

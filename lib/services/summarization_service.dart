@@ -257,4 +257,11 @@ class SummarizationService {
     _cachedPrompt = null;
     AppLogger.d('Cleared summarization prompt cache');
   }
+
+  /// Clear all cached summarization results
+  /// Useful for wiping all memories when "Destroy Alex" is pressed
+  static void clearAllMemories() {
+    _cache.clear();
+    AppLogger.i('Cleared all cached summarization memories');
+  }
 }
