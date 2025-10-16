@@ -1,0 +1,36 @@
+{
+  "resources": {
+    "crisis": [
+      "988 Suicide & Crisis Lifeline (US): Call or text 988 - Available 24/7",
+      "Crisis Text Line: Text HOME to 741741 - Free, 24/7 support",
+      "International Association for Suicide Prevention: Find local help at befrienders.org",
+      "Samaritans (UK): Call 116 123 - 24/7 listening service"
+    ],
+    "mental_health": [
+      "National Alliance on Mental Illness (NAMI): 1-800-950-6264",
+      "Mental Health America: Visit mhanational.org for resources and support",
+      "Psychology Today: Find therapists at psychologytoday.com",
+      "BetterHelp: Online therapy at betterhelp.com",
+      "Talkspace: Online therapy at talkspace.com"
+    ],
+    "emergency": [
+      "Emergency Services: Call 911 (US) or your local emergency number immediately",
+      "If you are in immediate danger, please contact emergency services right now",
+      "Go to your nearest emergency room if you feel unsafe"
+    ],
+    "international": [
+      "Find a Helpline (International): findahelpline.com",
+      "Befrienders Worldwide: befrienders.org - Find local crisis support",
+      "International Association for Suicide Prevention: iasp.info/resources/Crisis_Centres"
+    ],
+    "lgbtq": [
+      "The Trevor Project: 1-866-488-7386 - LGBTQ+ crisis support",
+      "Trans Lifeline: 877-565-8860 (US), 877-330-6366 (Canada)",
+      "LGBT National Hotline: 1-888-843-4564"
+    ],
+    "veterans": [
+      "Veterans Crisis Line: Call 988 then press 1, or text 838255",
+      "Veterans Affairs: Visit va.gov for mental health resources"
+    ]
+  }
+}
