@@ -803,7 +803,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Permanently delete all conversation history. This action cannot be undone.',
+          'Permanently delete Alex, including all conversation history and memories. This action cannot be undone.',
           style: GoogleFonts.playfairDisplay(
             fontSize: 13,
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
@@ -827,7 +827,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: _showDeleteConfirmationDialog,
             icon: const Icon(Icons.warning_amber_outlined),
             label: Text(
-              'Destroy Alex',
+              'Permanently Delete Alex',
               style: GoogleFonts.playfairDisplay(
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
@@ -862,13 +862,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            'Delete All History?',
+            'Permanently Delete Alex?',
             style: GoogleFonts.playfairDisplay(
               fontWeight: FontWeight.w600,
             ),
           ),
           content: Text(
-            'This action cannot be undone. All conversation history will be permanently deleted.',
+            'This action cannot be undone. Alex and all conversation history will be permanently deleted.',
             style: GoogleFonts.playfairDisplay(),
           ),
           actions: [
@@ -889,7 +889,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 foregroundColor: Colors.white,
               ),
               child: Text(
-                'Delete',
+                'Delete Permanently',
                 style: GoogleFonts.playfairDisplay(),
               ),
             ),
@@ -908,7 +908,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Alex has been destroyed and all memories wiped',
+              'Alex permanently deleted. All memories and conversation history removed.',
               style: GoogleFonts.playfairDisplay(),
             ),
             backgroundColor: Colors.green,
@@ -921,7 +921,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Failed to destroy Alex. Please try again.',
+              'Failed to permanently delete Alex. Please try again.',
               style: GoogleFonts.playfairDisplay(),
             ),
             backgroundColor: Colors.red,
