@@ -55,7 +55,14 @@ class SafetyService {
       AppLogger.d('Loading help resources from assets/help_resources.json');
       final String response = await rootBundle.loadString('assets/help_resources.json');
       final data = jsonDecode(response);
-      _helpResources = Map<String, List<String>>.from(data['resources'] ?? {});
+      final Map<String, dynamic> resourcesData = data['resources'] ?? {};
+
+      // Convert List<dynamic> to List<String> for each category
+      _helpResources = {};
+      resourcesData.forEach((category, resourceList) {
+        _helpResources[category] = List<String>.from(resourceList ?? []);
+      });
+
       AppLogger.i('Loaded help resources for ${_helpResources.length} categories');
     } catch (e) {
       AppLogger.e('Failed to load help resources', e);

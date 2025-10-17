@@ -71,6 +71,9 @@ flutter:
   assets:
     - assets/.env
     - assets/system_prompt.json
+    - assets/help_resources.json
+    - assets/sensitive_keywords.json
+    - assets/summarization_prompt.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
