@@ -165,10 +165,22 @@ class MemoryManager {
   Future<void> processMessages(List<ConversationMessage> newMessages, ConversationContext context) async {
     if (newMessages.isEmpty) return;
 
-    AppLogger.d('Processing ${newMessages.length} messages for memory management');
+    // Filter out trivial messages to reduce token usage
+    final importantMessages = newMessages.where((message) {
+      final importance = _calculateMessageImportance(message, newMessages);
+      return importance >= _config.minMessageImportance &&
+             message.text.length >= _config.minMessageLength;
+    }).toList();
+
+    if (importantMessages.isEmpty) {
+      AppLogger.d('No important messages to process, skipping memory management');
+      return;
+    }
+
+    AppLogger.d('Processing ${importantMessages.length}/${newMessages.length} important messages for memory management');
 
     // Group messages into logical segments (e.g., by topic or time gaps)
-    final segments = await _createMessageSegments(newMessages, context);
+    final segments = await _createMessageSegments(importantMessages, context);
 
     for (final segment in segments) {
       final memorySegment = _createMemorySegment(segment.messages, segment.summary);

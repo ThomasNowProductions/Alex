@@ -140,7 +140,9 @@ class ConversationService {
 
   /// Get relevant memories for a given query
   static List<MemorySegment> getRelevantMemories(String query, {int limit = 10}) {
-    return _memoryManager.getRelevantMemories(query, limit: limit);
+    // Use optimized limit from memory config to reduce token usage
+    final optimizedLimit = min(limit, _memoryConfig.maxContextMessages);
+    return _memoryManager.getRelevantMemories(query, limit: optimizedLimit);
   }
 
   /// Get memory metrics
@@ -153,6 +155,24 @@ class ConversationService {
     _memoryConfig = config;
     _memoryManager = MemoryManager(_memoryConfig);
     AppLogger.i('Memory configuration updated');
+  }
+
+  /// Switch to token-efficient configuration for reduced API costs
+  static void useTokenEfficientConfig() {
+    updateMemoryConfig(MemoryConfig.tokenEfficient);
+    AppLogger.i('Switched to token-efficient memory configuration');
+  }
+
+  /// Switch to standard configuration for balanced usage
+  static void useStandardConfig() {
+    updateMemoryConfig(MemoryConfig.standard);
+    AppLogger.i('Switched to standard memory configuration');
+  }
+
+  /// Switch to comprehensive configuration for maximum memory retention
+  static void useComprehensiveConfig() {
+    updateMemoryConfig(MemoryConfig.comprehensive);
+    AppLogger.i('Switched to comprehensive memory configuration');
   }
 
   /// Get current memory configuration
@@ -268,8 +288,9 @@ class ConversationService {
 
   static Future<void> _processMessageWithMemoryManager(ConversationMessage message, List<ConversationMessage> previousMessages) async {
     try {
-      // Process the new message along with recent context for memory management
-      final recentMessages = getRecentMessages(limit: 20);
+      // Use optimized context limit from memory config to reduce token usage
+      final contextLimit = min(_memoryConfig.maxContextMessages, 20);
+      final recentMessages = getRecentMessages(limit: contextLimit);
       await _memoryManager.processMessages(recentMessages, _context);
 
       // Update context with new memory segments and metrics

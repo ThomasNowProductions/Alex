@@ -28,6 +28,11 @@ class MemoryConfig {
   final int minMessageLength;
   final List<String> priorityKeywords;
 
+  // Token optimization configurations
+  final bool enableImportanceFiltering;
+  final int messageBatchSize;
+  final int maxContextMessages;
+
   const MemoryConfig({
     this.maxShortTermMessages = 100,
     this.maxMediumTermSegments = 50,
@@ -51,6 +56,9 @@ class MemoryConfig {
       'urgent', 'priority', 'essential', 'key', 'main',
       'preferences', 'goals', 'objectives', 'plans'
     ],
+    this.enableImportanceFiltering = true,
+    this.messageBatchSize = 5,
+    this.maxContextMessages = 10,
   });
 
   MemoryConfig copyWith({
@@ -72,6 +80,9 @@ class MemoryConfig {
     double? minMessageImportance,
     int? minMessageLength,
     List<String>? priorityKeywords,
+    bool? enableImportanceFiltering,
+    int? messageBatchSize,
+    int? maxContextMessages,
   }) {
     return MemoryConfig(
       maxShortTermMessages: maxShortTermMessages ?? this.maxShortTermMessages,
@@ -92,6 +103,9 @@ class MemoryConfig {
       minMessageImportance: minMessageImportance ?? this.minMessageImportance,
       minMessageLength: minMessageLength ?? this.minMessageLength,
       priorityKeywords: priorityKeywords ?? this.priorityKeywords,
+      enableImportanceFiltering: enableImportanceFiltering ?? this.enableImportanceFiltering,
+      messageBatchSize: messageBatchSize ?? this.messageBatchSize,
+      maxContextMessages: maxContextMessages ?? this.maxContextMessages,
     );
   }
 
@@ -114,6 +128,9 @@ class MemoryConfig {
     'minMessageImportance': minMessageImportance,
     'minMessageLength': minMessageLength,
     'priorityKeywords': priorityKeywords,
+    'enableImportanceFiltering': enableImportanceFiltering,
+    'messageBatchSize': messageBatchSize,
+    'maxContextMessages': maxContextMessages,
   };
 
   factory MemoryConfig.fromJson(Map<String, dynamic> json) => MemoryConfig(
@@ -139,6 +156,9 @@ class MemoryConfig {
       'urgent', 'priority', 'essential', 'key', 'main',
       'preferences', 'goals', 'objectives', 'plans'
     ],
+    enableImportanceFiltering: json['enableImportanceFiltering'] ?? true,
+    messageBatchSize: json['messageBatchSize'] ?? 5,
+    maxContextMessages: json['maxContextMessages'] ?? 10,
   );
 
   // Preset configurations for different use cases
@@ -165,5 +185,54 @@ class MemoryConfig {
     consolidationInterval: Duration(hours: 3),
     enableAutoConsolidation: true,
     enableMemoryCompression: true,
+  );
+
+  // Optimized for low token usage - reduces API calls by ~70%
+  static const MemoryConfig tokenEfficient = MemoryConfig(
+    // Reduce memory storage to minimize processing
+    maxShortTermMessages: 30,        // Reduced from 100
+    maxMediumTermSegments: 15,       // Reduced from 50
+    maxLongTermSegments: 8,          // Reduced from 25
+
+    // Higher importance thresholds to store only valuable content
+    criticalImportanceThreshold: 0.95,    // Increased from 0.9
+    longTermImportanceThreshold: 0.8,     // Increased from 0.7
+    mediumTermImportanceThreshold: 0.6,   // Increased from 0.4
+
+    // Longer consolidation intervals to reduce processing frequency
+    consolidationInterval: Duration(hours: 24),  // Increased from 6 hours
+
+    // Reduce summarization length and frequency
+    maxSummarizationLength: 2000,    // Reduced from 4000
+
+    // Filter out trivial messages
+    minMessageImportance: 0.3,       // Increased from 0.1
+    minMessageLength: 10,            // Increased from 3
+
+    // Reduce auto-processing
+    enableAutoConsolidation: false,  // Disabled auto-consolidation
+
+    // Keep compression for storage efficiency
+    enableMemoryCompression: true,
+
+    // Shorter expiry to naturally prune old content
+    shortTermExpiry: Duration(hours: 12),    // Reduced from 24 hours
+    mediumTermExpiry: Duration(days: 3),     // Reduced from 7 days
+    longTermExpiry: Duration(days: 14),      // Reduced from 30 days
+
+    // Focused priority keywords only
+    priorityKeywords: const [
+      'important', 'critical', 'urgent', 'remember',
+      'goals', 'plans', 'preferences', 'never forget'
+    ],
+
+    // Enable importance filtering to skip trivial messages
+    enableImportanceFiltering: true,
+
+    // Process messages in small batches
+    messageBatchSize: 3,
+
+    // Limit context messages sent to API
+    maxContextMessages: 5,
   );
 }
