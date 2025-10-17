@@ -74,7 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _initializeConversationService() async {
     AppLogger.d('Initializing conversation service');
     try {
-      await ConversationService.loadContext();
+      await ConversationService.initialize();
       AppLogger.i('Conversation service initialized successfully');
     } catch (e) {
       AppLogger.e('Failed to initialize conversation service', e);
