@@ -28,6 +28,20 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
 
+  // Welcome messages for variety
+  final List<String> _welcomeMessages = [
+    "Hey, whatsup?",
+    "What's on your mind today?",
+    "I'm here whenever you're ready to chat.",
+    "How are you feeling right now?",
+    "Ready for a good conversation?",
+    "What's been happening in your world?",
+    "I'm all ears if you need to talk.",
+    "How can I brighten your day?",
+  ];
+
+  late String _currentWelcomeMessage;
+
   // Speech recognition variables
   late stt.SpeechToText _speech;
   bool _isListening = false;
@@ -44,6 +58,8 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    // Select a random welcome message for variety
+    _currentWelcomeMessage = _getRandomWelcomeMessage();
     _initializeServices();
     _startSummarizationTimer();
 
@@ -593,6 +609,21 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  /// Get a random welcome message from the available options
+  String _getRandomWelcomeMessage() {
+    final random = DateTime.now().millisecondsSinceEpoch % _welcomeMessages.length;
+    return _welcomeMessages[random];
+  }
+
+  /// Refresh the welcome message with a new random selection
+  void _refreshWelcomeMessage() {
+    if (mounted) {
+      setState(() {
+        _currentWelcomeMessage = _getRandomWelcomeMessage();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -758,7 +789,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 maxWidth: MediaQuery.of(context).size.width * AppConstants.chatBubbleMaxWidth,
               ),
               child: Text(
-                'Hey, whatsup?',
+                _currentWelcomeMessage,
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 30,
                   fontWeight: FontWeight.w400,
