@@ -98,12 +98,9 @@ class _PinLockWrapperState extends State<PinLockWrapper> {
       children: [
         widget.child,
         if (_showPinDialog)
-          Container(
-            color: Colors.black.withOpacity(0.7),
-            child: const PinEntryDialog(
-              title: 'Welcome Back',
-              subtitle: 'Enter your PIN to access the app',
-            ),
+          const PinEntryDialog(
+            title: 'Welcome Back',
+            subtitle: 'Enter your PIN to access the app',
           ),
       ],
     );
