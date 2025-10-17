@@ -262,6 +262,214 @@ FloatingSnackbar.show(
 - **Font Weight**: Semi-bold for emphasis
 - **Tap Target**: Optimized for touch interaction
 
+### PinEntryDialog
+
+Secure PIN entry dialog with numeric keypad for app access protection.
+
+#### Location
+`lib/widgets/pin_entry_dialog.dart`
+
+#### Features
+- **Secure PIN Entry**: 4-digit PIN input with visual feedback
+- **Numeric Keypad**: Custom on-screen numeric keypad
+- **Keyboard Support**: Hardware keyboard input support
+- **Visual Feedback**: Animated PIN dots and loading states
+- **Error Handling**: Clear error messages for incorrect PINs
+- **Responsive Design**: Adapts to mobile and desktop screen sizes
+- **Theme Integration**: Consistent with app theme and styling
+
+#### Properties
+
+```dart
+class PinEntryDialog extends StatefulWidget {
+  final String title;              // Dialog title text
+  final String subtitle;           // Dialog subtitle text
+  final VoidCallback? onSuccess;   // Callback when PIN is verified
+  final bool showBackButton;       // Show alternative access button
+}
+```
+
+#### Key Methods
+
+##### `_addDigit(String digit)`
+Adds a digit to the entered PIN.
+
+```dart
+void _addDigit(String digit)
+```
+
+##### `_removeDigit()`
+Removes the last digit from entered PIN.
+
+```dart
+void _removeDigit()
+```
+
+##### `_verifyPin()`
+Verifies the entered PIN against stored hash.
+
+```dart
+Future<void> _verifyPin() async
+```
+
+#### UI Structure
+
+##### Dialog Layout
+```dart
+Scaffold(
+  backgroundColor: Colors.transparent,
+  body: Container(
+    decoration: BoxDecoration(gradient: LinearGradient(...)),
+    child: SafeArea(
+      child: Padding(
+        padding: EdgeInsets.all(padding),
+        child: Column(
+          children: [
+            // Header with title and subtitle
+            // PIN display dots
+            // Numeric keypad
+            // Error messages and loading indicators
+          ]
+        )
+      )
+    )
+  )
+)
+```
+
+##### PIN Display
+- **Visual Dots**: 4 circular indicators showing entered digits
+- **Filled State**: Primary color when digit is entered
+- **Empty State**: Outline color when digit is not entered
+- **Animation**: Smooth color transitions
+
+##### Numeric Keypad
+```dart
+const keypadLayout = [
+  ['1', '2', '3'],
+  ['4', '5', '6'],
+  ['7', '8', '9'],
+  [' ', '0', '⌫'],  // Backspace button
+];
+```
+
+##### Keypad Features
+- **Circular Buttons**: Consistent button shape and sizing
+- **Responsive Sizing**: Adapts to screen size and platform
+- **Visual Feedback**: Shadow effects and press animations
+- **Backspace Button**: Icon-based delete functionality
+- **Empty Space**: Proper spacing in bottom row
+
+#### Keyboard Support
+
+##### Hardware Keyboard Input
+- **Number Keys**: 0-9 digit input support
+- **Numpad Support**: Extended keyboard numpad support
+- **Backspace**: Delete key support
+- **Enter Key**: Submit PIN when 4 digits entered
+
+##### Input Handling
+```dart
+RawKeyboardListener(
+  focusNode: _focusNode,
+  onKey: (RawKeyEvent event) {
+    if (event is RawKeyDownEvent) {
+      // Handle number keys, backspace, enter
+    }
+  },
+  child: const SizedBox.shrink(),
+)
+```
+
+#### Security Features
+
+##### PIN Verification
+- **Hash Comparison**: Compares against SHA-256 hashed PIN
+- **No Plaintext Storage**: PINs never stored in plaintext
+- **Verification Delay**: Brief delay for better UX during verification
+- **Error Feedback**: Clear messaging for incorrect attempts
+
+##### Auto-Verification
+- **4-Digit Auto-Submit**: Automatically verifies when 4 digits entered
+- **Loading State**: Visual feedback during verification process
+- **Success Callback**: Triggers onSuccess callback when verified
+
+#### Responsive Design
+
+##### Mobile Layout
+- **Larger Touch Targets**: 80px button size for easy finger navigation
+- **Generous Padding**: 32px padding for comfortable spacing
+- **Optimized Text Sizes**: 28px title, 16px subtitle
+
+##### Desktop Layout
+- **Smaller Buttons**: 60px button size for mouse interaction
+- **Reduced Padding**: 24px padding for efficient use of space
+- **Adjusted Text Sizes**: 32px title, 18px subtitle
+
+#### Error Handling
+
+##### Error States
+- **Incorrect PIN**: Clear error message with red styling
+- **Empty PIN**: No verification until 4 digits entered
+- **Verification Failure**: Reset PIN and show retry option
+
+##### Visual Feedback
+- **Error Text**: Styled with error color and appropriate font size
+- **Loading Indicator**: Circular progress indicator during verification
+- **Reset State**: PIN field clears on incorrect entry
+
+#### Static Method
+
+##### `showPinEntryDialog(BuildContext context, ...)`
+Displays the PIN entry dialog using Navigator.
+
+```dart
+static Future<bool> showPinEntryDialog(
+  BuildContext context, {
+  String title = 'Enter PIN',
+  String subtitle = 'Please enter your 4-digit PIN to continue',
+  VoidCallback? onSuccess,
+  bool showBackButton = false,
+}) async
+```
+
+**Usage Example**:
+```dart
+final pinCorrect = await showPinEntryDialog(
+  context,
+  title: 'Welcome Back',
+  subtitle: 'Enter your PIN to access the app',
+  onSuccess: () => print('PIN verified successfully'),
+  showBackButton: true,
+);
+
+if (pinCorrect) {
+  // PIN was correct, continue with app access
+} else {
+  // PIN was incorrect or dialog was cancelled
+}
+```
+
+#### Integration with SettingsService
+
+##### PIN Management
+- **Verification**: Uses `SettingsService.verifyPin()` for authentication
+- **Hash Storage**: Integrates with secure PIN storage system
+- **Settings Integration**: Respects PIN lock enabled/disabled state
+
+##### Security Integration
+```dart
+if (SettingsService.verifyPin(_enteredPin)) {
+  // PIN is correct
+  Navigator.of(context).pop(true);
+  widget.onSuccess?.call();
+} else {
+  // PIN is incorrect
+  _enteredPin = '';
+  _errorMessage = 'Incorrect PIN. Please try again.';
+}
+```
+
 ## Styling and Theming
 
 ### AppTheme

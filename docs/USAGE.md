@@ -13,15 +13,53 @@ Alex AI Companion is designed for natural, conversational interaction with an AI
    - Grant microphone permissions when prompted (mobile)
    - Wait for initialization of services
 
-2. **Initial Setup**
+2. **PIN Lock Check** (if enabled)
+   - If PIN lock is enabled, you'll be prompted to enter your 4-digit PIN
+   - Enter your PIN using the on-screen numeric keypad or hardware keyboard
+   - PIN is verified against secure hash storage
+   - Incorrect PIN attempts show clear error messages
+
+3. **Initial Setup**
    - Environment variables are loaded automatically
    - Conversation context is loaded from local storage
    - Speech recognition is initialized (if supported)
+   - Settings and preferences are loaded from local storage
 
-3. **Welcome Screen**
+4. **Welcome Screen**
    - You'll see a centered welcome message: "Hey, whatsup?"
    - The interface shows a chat area with input field at bottom
    - Microphone button available if speech recognition is supported
+
+## Security Features
+
+### PIN Lock Protection
+
+#### Setting Up PIN Lock
+
+1. **Enable PIN Protection**
+   - Access app settings to enable PIN lock
+   - Choose a 4-digit PIN that's easy to remember but hard to guess
+   - PIN is securely hashed and stored using SHA-256 encryption
+
+2. **PIN Entry Interface**
+   - **Visual Feedback**: 4 circular dots show PIN entry progress
+   - **Numeric Keypad**: Large, touch-friendly buttons for PIN entry
+   - **Keyboard Support**: Hardware keyboard input support
+   - **Auto-Submit**: Automatically verifies when 4 digits are entered
+
+3. **PIN Entry Methods**
+   - **Touch Input**: Tap numbers on the on-screen keypad
+   - **Hardware Keyboard**: Type numbers 0-9 on physical keyboard
+   - **Backspace**: Use ⌫ button or Backspace key to correct errors
+   - **Enter Key**: Press Enter to submit when 4 digits are entered
+
+#### PIN Lock Behavior
+
+- **App Launch**: PIN entry dialog appears before main interface
+- **Verification**: PIN compared against secure hash in real-time
+- **Error Handling**: Clear error messages for incorrect PIN attempts
+- **Security**: Brief delay during verification for better security
+- **Fallback**: Alternative access methods available if enabled
 
 ## Basic Usage
 
@@ -97,6 +135,27 @@ The app automatically summarizes long conversations:
   - On app close (if conversation is substantial)
 
 - **Summary Storage**: Summaries are saved locally for context
+
+#### Advanced Memory Management
+
+The app features intelligent memory management with hierarchical organization:
+
+- **Memory Types**:
+  - **Short-term**: Recent conversations (expires in 24 hours)
+  - **Medium-term**: Important topics (expires in 7 days)
+  - **Long-term**: Core preferences and facts (expires in 30 days)
+  - **Critical**: Essential information (never expires)
+
+- **Importance Scoring**: Messages automatically scored based on:
+  - Message length and complexity
+  - Priority keywords presence
+  - Question indicators
+  - Emotional content
+  - Personal information indicators
+
+- **Automatic Consolidation**: Related memories consolidated to optimize storage
+- **Memory Compression**: Old memories compressed for efficiency
+- **Performance Monitoring**: Memory usage and performance tracking
 
 #### Message Limits
 
@@ -175,6 +234,33 @@ Alex has a consistent, friendly personality:
 - **Mobile/Desktop**: Application documents directory
 - **Web**: Local browser storage
 - **Privacy**: All data remains local, never transmitted
+
+### Safety Features
+
+#### Content Safety Monitoring
+
+The app automatically monitors conversations for sensitive content:
+
+- **Sensitive Content Detection**: Identifies potentially concerning messages
+- **Crisis Intervention**: Provides immediate access to help resources
+- **Supportive Responses**: Generates caring responses for difficult situations
+- **Resource Integration**: Connects users with professional help services
+
+#### Available Resources
+
+When sensitive content is detected, users have access to:
+
+- **Crisis Hotlines**: 988 Suicide & Crisis Lifeline, Crisis Text Line
+- **Mental Health Support**: National Alliance on Mental Illness (NAMI)
+- **Emergency Services**: Local emergency contact information
+- **Professional Help**: Psychology Today therapist finder
+
+#### Privacy and Safety
+
+- **Local Processing**: All safety analysis happens locally
+- **No Data Transmission**: Sensitive content never sent to external servers
+- **User Control**: Easy access to help resources when needed
+- **Compassionate Design**: Supportive rather than judgmental approach
 
 ### Error Handling
 

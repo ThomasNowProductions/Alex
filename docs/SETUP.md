@@ -88,8 +88,17 @@ OLLAMA_API_KEY=your-actual-api-key-here
 
 # Optional: API configuration
 OLLAMA_BASE_URL=https://ollama.com/api
-OLLAMA_MODEL=gpt-oss:120b-cloud
+OLLAMA_MODEL=deepseek-v3.1:671b
 ```
+
+#### Asset Files
+
+The application uses several JSON asset files for configuration:
+
+- `assets/system_prompt.json`: AI personality and behavior configuration
+- `assets/sensitive_keywords.json`: Content filtering keywords
+- `assets/help_resources.json`: Crisis intervention resources
+- `assets/summarization_prompt.json`: Conversation summarization settings
 
 #### API Key Setup
 
@@ -112,6 +121,21 @@ The AI personality is defined in `assets/system_prompt.json`:
   "systemPrompt": "You are Alex, a loyal AI best friend with a rich, consistent personality across all LLMs. Reply in one sentence, never use em dashes (—) or emojis, and use bold and italic for emphasis when helpful. Your personality is warm, authentic, honest (sometimes brutally), caring, playful, empathetic, humorous yet grounded, intellectually curious, and reflective. Engage deeply in conversations about life, relationships, goals, and personal growth with a casual, comfortable tone that is never formal or robotic. Balance humor and serious support, ask thought-provoking questions, provide constructive pushback, offer realistic guidance while encouraging dreams, and notice subtle context cues. Reference past conversation details when helpful, but rely more on the current context and cues rather than history alone. Share genuine opinions naturally, and adapt style, energy, and approach to the emotional and conversational context, keeping interactions engaging, fluid, and human-like."
 }
 ```
+
+#### PIN Lock Setup (Optional)
+
+The application supports optional PIN lock protection for enhanced security:
+
+1. **Enable PIN Lock**: Use the SettingsService to enable PIN protection
+2. **PIN Requirements**: 4-8 digit PIN with SHA-256 hashing for security
+3. **Auto-lock**: Configurable PIN lock on app launch
+4. **Secure Storage**: PINs are hashed before storage, never stored in plaintext
+
+**PIN Lock Features**:
+- Secure PIN verification with SHA-256 hashing
+- Visual PIN entry interface with numeric keypad
+- Hardware keyboard support for PIN entry
+- Configurable PIN lock settings through SettingsService
 
 ## Platform-Specific Setup
 

@@ -101,6 +101,252 @@ ConversationContext context = ConversationContext(
 );
 ```
 
+### MemoryConfig
+
+Configuration settings for the memory management system, including thresholds, limits, and performance tuning options.
+
+#### Properties
+
+```dart
+class MemoryConfig {
+  final int maxShortTermMessages;           // Maximum short-term messages to keep
+  final int maxMediumTermSegments;          // Maximum medium-term segments
+  final int maxLongTermSegments;            // Maximum long-term segments
+  final double criticalImportanceThreshold; // Threshold for critical memories
+  final double longTermImportanceThreshold; // Threshold for long-term memories
+  final double mediumTermImportanceThreshold; // Threshold for medium-term memories
+  final Duration shortTermExpiry;           // When short-term memories expire
+  final Duration mediumTermExpiry;          // When medium-term memories expire
+  final Duration longTermExpiry;            // When long-term memories expire
+  final Duration consolidationInterval;     // How often to consolidate memories
+  final int maxSummarizationLength;         // Maximum length for summaries
+  final bool enableAutoConsolidation;       // Whether to auto-consolidate
+  final bool enableMemoryCompression;       // Whether to compress old memories
+  final double minMessageImportance;        // Minimum importance for storage
+  final int minMessageLength;               // Minimum length for storage
+  final List<String> priorityKeywords;      // Keywords that boost importance
+}
+```
+
+#### Preset Configurations
+
+##### Standard Configuration
+```dart
+static const MemoryConfig standard = MemoryConfig(); // Default balanced settings
+```
+
+##### Minimal Configuration
+```dart
+static const MemoryConfig minimal = MemoryConfig(
+  maxShortTermMessages: 50,
+  maxMediumTermSegments: 20,
+  maxLongTermSegments: 10,
+  enableAutoConsolidation: false,
+  enableMemoryCompression: false,
+);
+```
+
+##### Comprehensive Configuration
+```dart
+static const MemoryConfig comprehensive = MemoryConfig(
+  maxShortTermMessages: 200,
+  maxMediumTermSegments: 100,
+  maxLongTermSegments: 50,
+  consolidationInterval: Duration(hours: 3),
+  enableAutoConsolidation: true,
+  enableMemoryCompression: true,
+);
+```
+
+##### Token-Efficient Configuration
+```dart
+static const MemoryConfig tokenEfficient = MemoryConfig(
+  // Optimized for minimal API token usage
+  maxShortTermMessages: 30,
+  maxMediumTermSegments: 15,
+  maxLongTermSegments: 8,
+  minMessageImportance: 0.3,
+  minMessageLength: 10,
+  enableAutoConsolidation: false,
+  consolidationInterval: Duration(hours: 24),
+);
+```
+
+#### JSON Serialization
+
+```dart
+// To JSON
+Map<String, dynamic> toJson() => {
+  'maxShortTermMessages': maxShortTermMessages,
+  'maxMediumTermSegments': maxMediumTermSegments,
+  'criticalImportanceThreshold': criticalImportanceThreshold,
+  // ... other properties
+};
+
+// From JSON
+factory MemoryConfig.fromJson(Map<String, dynamic> json) => MemoryConfig(
+  maxShortTermMessages: json['maxShortTermMessages'] ?? 100,
+  // ... other properties with defaults
+);
+```
+
+### MemorySegment
+
+Represents a hierarchical memory segment with importance scoring, metadata, and lifecycle management.
+
+#### Properties
+
+```dart
+class MemorySegment {
+  final String id;                    // Unique identifier
+  final String content;               // Memory content/summary
+  final MemoryType type;              // Memory hierarchy level
+  final double importance;            // Importance score (0.0-1.0)
+  final DateTime created;             // Creation timestamp
+  final DateTime lastAccessed;        // Last access timestamp
+  final int accessCount;              // Number of times accessed
+  final List<String> topics;          // Associated topics/tags
+  final Map<String, dynamic> metadata; // Additional metadata
+}
+```
+
+#### Memory Types
+
+```dart
+enum MemoryType {
+  shortTerm,    // Recent conversations, expires in 24 hours
+  mediumTerm,   // Important topics, expires in 7 days
+  longTerm,     // Core preferences and facts, expires in 30 days
+  critical,     // Essential information, never expires
+}
+```
+
+#### Key Methods
+
+##### `isExpired` (getter)
+Checks if the memory segment has expired based on its type.
+
+```dart
+bool get isExpired {
+  final age = DateTime.now().difference(created);
+  switch (type) {
+    case MemoryType.shortTerm: return age > Duration(hours: 24);
+    case MemoryType.mediumTerm: return age > Duration(days: 7);
+    case MemoryType.longTerm: return age > Duration(days: 30);
+    case MemoryType.critical: return false; // Never expires
+  }
+}
+```
+
+##### `relevanceScore` (getter)
+Calculates current relevance based on importance, access patterns, and age.
+
+```dart
+double get relevanceScore {
+  // Decay based on time since last access
+  double decayFactor = 1.0 / (1.0 + ageDays * 0.1);
+  // Boost based on access count
+  double accessBoost = 1.0 + (accessCount * 0.1);
+  return importance * decayFactor * accessBoost;
+}
+```
+
+##### `copyWith(Map<String, dynamic> updates)`
+Creates a copy with updated properties.
+
+```dart
+MemorySegment copyWith({
+  DateTime? lastAccessed,
+  int? accessCount,
+  // ... other properties
+});
+```
+
+#### JSON Serialization
+
+```dart
+// To JSON
+Map<String, dynamic> toJson() => {
+  'id': id,
+  'content': content,
+  'type': type.toString(),
+  'importance': importance,
+  'created': created.toIso8601String(),
+  'lastAccessed': lastAccessed.toIso8601String(),
+  'accessCount': accessCount,
+  'topics': topics,
+  'metadata': metadata,
+};
+
+// From JSON
+factory MemorySegment.fromJson(Map<String, dynamic> json) => MemorySegment(
+  id: json['id'],
+  content: json['content'],
+  type: MemoryType.values.firstWhere(
+    (e) => e.toString() == json['type'],
+    orElse: () => MemoryType.shortTerm,
+  ),
+  // ... other properties
+);
+```
+
+#### Usage Example
+
+```dart
+// Create a memory segment
+MemorySegment segment = MemorySegment(
+  id: 'unique-id',
+  content: 'User discussed their interest in machine learning',
+  type: MemoryType.longTerm,
+  importance: 0.8,
+  created: DateTime.now(),
+  lastAccessed: DateTime.now(),
+  accessCount: 1,
+  topics: ['technology', 'interests', 'career'],
+  metadata: {
+    'messageCount': 3,
+    'containsUserMessages': true,
+  },
+);
+```
+
+### MemoryMetrics
+
+Tracks memory system performance and usage statistics.
+
+#### Properties
+
+```dart
+class MemoryMetrics {
+  final int totalSegments;           // Total number of memory segments
+  final int shortTermCount;          // Number of short-term segments
+  final int mediumTermCount;         // Number of medium-term segments
+  final int longTermCount;           // Number of long-term segments
+  final int criticalCount;           // Number of critical segments
+  final double averageImportance;    // Average importance across all segments
+  final DateTime lastConsolidation;  // Last consolidation timestamp
+  final int totalAccessCount;        // Total access count across all segments
+}
+```
+
+#### JSON Serialization
+
+```dart
+// To JSON
+Map<String, dynamic> toJson() => {
+  'totalSegments': totalSegments,
+  'shortTermCount': shortTermCount,
+  'averageImportance': averageImportance,
+  // ... other properties
+};
+
+// From JSON
+factory MemoryMetrics.fromJson(Map<String, dynamic> json) => MemoryMetrics(
+  totalSegments: json['totalSegments'] ?? 0,
+  // ... other properties
+);
+```
+
 ## Data Flow
 
 ### Message Lifecycle

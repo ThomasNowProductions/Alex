@@ -14,11 +14,17 @@ Alex AI Companion follows a modern, layered architecture that separates concerns
 ├─────────────────────────────────────────────────────────────┤
 │                 Service Layer                               │
 ├─────────────────────────────────────────────────────────────┤
-│  Conversation  │  Ollama     │  Summarization  │  Utils    │
+│  Conversation  │  Ollama     │  Summarization  │  Memory   │
+│  Management    │  Service    │  Service        │  Manager  │
+├─────────────────────────────────────────────────────────────┤
+│  Settings      │  Safety     │  Memory         │  Utils    │
+│  Service       │  Service    │  Monitor        │           │
 ├─────────────────────────────────────────────────────────────┤
 │                 Data Layer                                  │
 ├─────────────────────────────────────────────────────────────┤
 │   Models       │  Local Storage    │  API Integration      │
+│  Memory        │  Settings         │  Security             │
+│  Segments      │  Files            │  Features             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -50,8 +56,15 @@ Alex AI Companion follows a modern, layered architecture that separates concerns
 - `ConversationService`: Manages conversation history and persistence
 - `OllamaService`: Handles AI API communication
 - `SummarizationService`: Provides conversation summarization
+- `MemoryManager`: Advanced memory management with importance scoring
+- `SettingsService`: User preferences and configuration management
+- `SafetyService`: Content filtering and safety monitoring
+
+**Monitoring Services** (`lib/services/`)
+- `MemoryMonitor`: Performance monitoring and metrics collection
 
 **Utility Services** (`lib/utils/`)
+- `Logger`: Comprehensive logging system for debugging and monitoring
 - `SpeechUtils`: Speech recognition functionality
 - `PermissionUtils`: Platform-specific permission handling
 - `PlatformUtils`: Cross-platform compatibility utilities
@@ -61,11 +74,15 @@ Alex AI Companion follows a modern, layered architecture that separates concerns
 **Models** (`lib/models/`)
 - `ConversationContext`: Complete conversation state
 - `ConversationMessage`: Individual message representation
+- `MemoryConfig`: Configuration for memory management system
+- `MemorySegment`: Hierarchical memory storage with importance levels
 
 **Storage**
 - Local file storage using `path_provider`
 - JSON serialization for data persistence
 - Application documents directory for data storage
+- Settings storage in `user_settings.json`
+- Secure PIN hash storage with SHA-256 encryption
 
 ## Component Relationships
 
@@ -178,16 +195,37 @@ The app supports multiple platforms through Flutter's compilation targets:
    - Conversation data stored locally only
    - No transmission of personal data
    - JSON serialization for structured data
+   - Secure settings storage in encrypted format
 
 2. **API Security**
    - Bearer token authentication
    - Environment variable storage for API keys
    - HTTPS-only communication
+   - Support for both inbuilt and custom API keys
 
-3. **Permission Handling**
+3. **PIN Lock Security**
+   - SHA-256 PIN hashing for secure storage
+   - Optional PIN protection for app access
+   - Configurable PIN lock settings
+   - Secure PIN verification system
+
+4. **Permission Handling**
    - Microphone permission requests
    - Platform-specific permission management
    - Graceful degradation when permissions denied
+
+### Safety and Content Filtering
+
+1. **Content Safety**
+   - Sensitive keyword detection and filtering
+   - Crisis intervention resource integration
+   - Safe response generation for sensitive content
+   - Configurable safety thresholds and responses
+
+2. **Resource Management**
+   - Help resource loading from JSON assets
+   - Fallback resources for offline scenarios
+   - Category-based resource organization
 
 ## Performance Architecture
 
@@ -198,7 +236,14 @@ The app supports multiple platforms through Flutter's compilation targets:
    - Summarization for long conversations
    - Configurable message limits
 
-2. **UI Performance**
+2. **Advanced Memory System**
+   - Hierarchical memory organization (short-term, medium-term, long-term, critical)
+   - Importance-based message scoring and filtering
+   - Automatic memory consolidation and cleanup
+   - Memory compression for storage efficiency
+   - Performance monitoring and metrics collection
+
+3. **UI Performance**
    - Efficient list rendering for messages
    - Async operations for smooth UX
    - Proper widget disposal
@@ -209,13 +254,20 @@ The app supports multiple platforms through Flutter's compilation targets:
    - Conversation history loaded on demand
    - Pagination for large conversation sets
 
-2. **Caching**
+2. **Intelligent Caching**
+   - Memory segment caching based on importance
    - API response caching (future enhancement)
    - Local storage for offline functionality
 
 3. **Background Processing**
    - Conversation summarization in background
    - Non-blocking save operations
+   - Automatic memory consolidation scheduling
+
+4. **Token Efficiency**
+   - Configurable memory management for reduced API usage
+   - Importance filtering to minimize token consumption
+   - Smart context selection for API requests
 
 ## Scalability Considerations
 
