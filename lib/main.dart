@@ -78,9 +78,9 @@ class _PinLockWrapperState extends State<PinLockWrapper> {
     } else if (mounted) {
       // If PIN is incorrect, show error and try again
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Incorrect PIN. Please try again.'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Incorrect PIN. Please try again.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       // Show PIN dialog again after a short delay

@@ -30,16 +30,12 @@ class ChatMessage extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: isLoading
-                      ? Colors.blue.withValues(alpha: 0.15)  // Blue when thinking
-                      : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12), // Original color after response
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                   blurRadius: 50,
                   spreadRadius: 8,
                 ),
                 BoxShadow(
-                  color: isLoading
-                      ? Colors.blue.withValues(alpha: 0.08)  // Blue when thinking
-                      : Theme.of(context).colorScheme.primary.withValues(alpha: 0.06), // Original color after response
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.06),
                   blurRadius: 100,
                   spreadRadius: 20,
                 ),

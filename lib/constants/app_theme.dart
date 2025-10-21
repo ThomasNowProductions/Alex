@@ -51,15 +51,11 @@ class AppTheme {
 
   /// Custom color scheme for chat messages
   static Color getMessageBackgroundColor(BuildContext context, bool isLoading) {
-    return isLoading
-        ? Colors.blue.withValues(alpha: 0.15)
-        : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12);
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.12);
   }
 
   /// Custom color scheme for chat message shadows
   static Color getMessageShadowColor(BuildContext context, bool isLoading) {
-    return isLoading
-        ? Colors.blue.withValues(alpha: 0.08)
-        : Theme.of(context).colorScheme.primary.withValues(alpha: 0.06);
+    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.06);
   }
 }

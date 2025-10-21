@@ -123,7 +123,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -330,7 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -557,9 +557,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 width: 24,
                 height: 24,
-                child: const Icon(
+                child: Icon(
                   Icons.check,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                   size: 16,
                 ),
               )
@@ -682,7 +682,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -819,7 +819,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -985,9 +985,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 width: 24,
                 height: 24,
-                child: const Icon(
+                child: Icon(
                   Icons.check,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                   size: 16,
                 ),
               )
@@ -1043,8 +1043,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -1094,8 +1094,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _deleteAllHistory();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
               child: Text(
                 'Delete Permanently',
@@ -1120,7 +1120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Alex permanently deleted. All memories and conversation history removed.',
               style: GoogleFonts.playfairDisplay(),
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
       }
@@ -1133,7 +1133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Failed to permanently delete Alex. Please try again.',
               style: GoogleFonts.playfairDisplay(),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -1260,8 +1260,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _showSuccessSnackBar('PIN lock disabled');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.tertiary,
+                foregroundColor: Theme.of(context).colorScheme.onTertiary,
               ),
               child: Text(
                 'Disable',
@@ -1385,7 +1385,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           message,
           style: GoogleFonts.playfairDisplay(),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }

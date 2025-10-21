@@ -109,7 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         },
         backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         mini: true,
         child: const Icon(Icons.settings, size: 16),
       ),

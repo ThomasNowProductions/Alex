@@ -45,7 +45,7 @@ class ChatUIComponents {
                   height: 1.5,
                   shadows: [
                     Shadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                       blurRadius: 3,
                       offset: const Offset(0, 2),
                     ),
@@ -81,7 +81,7 @@ class ChatUIComponents {
       ),
       child: IconButton(
         onPressed: isLoading ? null : onPressed,
-        icon: const Icon(Icons.send, color: Colors.white),
+        icon: Icon(Icons.send, color: Theme.of(context).colorScheme.onPrimary),
         iconSize: 20,
       ),
     );
@@ -123,7 +123,7 @@ class ChatUIComponents {
               onPressed: state.isLoading ? null : onSpeechToggle,
               icon: Icon(
                 state.isListening ? Icons.mic_off : Icons.mic,
-                color: state.isListening ? Colors.red : Theme.of(context).colorScheme.primary,
+                color: state.isListening ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary,
                 size: 20,
               ),
             ),
