@@ -51,6 +51,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Settings sections
         _buildThemeSection(),
         const SizedBox(height: 24),
+        _buildColorPaletteSection(),
+        const SizedBox(height: 24),
         _buildApiSection(),
         const SizedBox(height: 24),
         _buildSecuritySection(),
@@ -107,6 +109,213 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: _buildThemeModeSetting(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildColorPaletteSection() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.color_lens_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Color Palette',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Primary Color',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Choose the main color theme for the app',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildColorOption(
+                        title: 'Blue',
+                        color: Colors.blue,
+                        value: 'blue',
+                        settingKey: 'primaryColor',
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      ),
+                      _buildColorOption(
+                        title: 'Purple',
+                        color: Colors.purple,
+                        value: 'purple',
+                        settingKey: 'primaryColor',
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      ),
+                      _buildColorOption(
+                        title: 'Green',
+                        color: Colors.green,
+                        value: 'green',
+                        settingKey: 'primaryColor',
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      ),
+                      _buildColorOption(
+                        title: 'Orange',
+                        color: Colors.orange,
+                        value: 'orange',
+                        settingKey: 'primaryColor',
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      ),
+                      _buildColorOption(
+                        title: 'Pink',
+                        color: Colors.pink,
+                        value: 'pink',
+                        settingKey: 'primaryColor',
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      ),
+                      _buildColorOption(
+                        title: 'Teal',
+                        color: Colors.teal,
+                        value: 'teal',
+                        settingKey: 'primaryColor',
+                      ),
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      ),
+                      _buildColorOption(
+                        title: 'Indigo',
+                        color: Colors.indigo,
+                        value: 'indigo',
+                        settingKey: 'primaryColor',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildColorOption({
+    required String title,
+    required Color color,
+    required String value,
+    required String settingKey,
+  }) {
+    final isSelected = SettingsService.settings[settingKey] == value;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? color.withOpacity(0.08)
+            : null,
+      ),
+      child: ListTile(
+        leading: Container(
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSelected
+                  ? color
+                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              width: 2,
+            ),
+          ),
+          width: 32,
+          height: 32,
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.playfairDisplay(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        trailing: isSelected
+            ? Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+                width: 24,
+                height: 24,
+                child: const Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              )
+            : null,
+        onTap: () => _updateSetting(settingKey, value),
       ),
     );
   }

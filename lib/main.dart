@@ -130,11 +130,13 @@ class FraintedApp extends StatefulWidget {
 
 class _FraintedAppState extends State<FraintedApp> {
   late Stream<String> _themeStream;
+  late Stream<String> _colorStream;
 
   @override
   void initState() {
     super.initState();
     _themeStream = SettingsService.themeChangeStream;
+    _colorStream = SettingsService.colorChangeStream;
   }
 
   ThemeMode _getThemeMode() {
@@ -154,16 +156,21 @@ class _FraintedAppState extends State<FraintedApp> {
   Widget build(BuildContext context) {
     return StreamBuilder<String>(
       stream: _themeStream,
-      builder: (context, snapshot) {
-        return MaterialApp(
-          title: AppConstants.appTitle,
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: _getThemeMode(),
-          home: const PinLockWrapper(
-            child: ChatScreen(),
-          ),
+      builder: (context, themeSnapshot) {
+        return StreamBuilder<String>(
+          stream: _colorStream,
+          builder: (context, colorSnapshot) {
+            return MaterialApp(
+              title: AppConstants.appTitle,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: _getThemeMode(),
+              home: const PinLockWrapper(
+                child: ChatScreen(),
+              ),
+            );
+          },
         );
       },
     );

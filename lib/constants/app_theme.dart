@@ -1,12 +1,37 @@
 import 'package:flutter/material.dart';
+import '../services/settings_service.dart';
 
 /// Application theme configuration
 class AppTheme {
+  /// Get the primary color based on user settings
+  static Color _getPrimaryColor() {
+    final colorName = SettingsService.primaryColor;
+    switch (colorName) {
+      case 'purple':
+        return Colors.purple;
+      case 'green':
+        return Colors.green;
+      case 'orange':
+        return Colors.orange;
+      case 'pink':
+        return Colors.pink;
+      case 'teal':
+        return Colors.teal;
+      case 'indigo':
+        return Colors.indigo;
+      case 'red':
+        return Colors.red;
+      case 'blue':
+      default:
+        return Colors.blue;
+    }
+  }
+
   /// Light theme configuration
   static ThemeData get lightTheme {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
+        seedColor: _getPrimaryColor(),
         brightness: Brightness.light,
       ),
       useMaterial3: true,
@@ -17,7 +42,7 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.blue,
+        seedColor: _getPrimaryColor(),
         brightness: Brightness.dark,
       ),
       useMaterial3: true,

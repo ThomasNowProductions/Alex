@@ -17,6 +17,8 @@ class SettingsService {
     'pinCode': '', // Hashed PIN code for security
     'apiKeySource': 'inbuilt', // 'inbuilt' or 'custom'
     'customApiKey': '', // Custom API key if using custom source
+    'primaryColor': 'blue', // Primary color for the theme
+    'accentColor': 'blue', // Accent color for highlights
   };
 
   static Map<String, dynamic> _settings = Map.from(_defaultSettings);
@@ -24,6 +26,10 @@ class SettingsService {
   // Stream controller for theme changes
   static final StreamController<String> _themeController = StreamController<String>.broadcast();
   static Stream<String> get themeChangeStream => _themeController.stream;
+
+  // Stream controller for color changes
+  static final StreamController<String> _colorController = StreamController<String>.broadcast();
+  static Stream<String> get colorChangeStream => _colorController.stream;
 
   static Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
@@ -84,6 +90,11 @@ class SettingsService {
     if (key == 'themeMode') {
       _themeController.add(value);
     }
+
+    // Notify listeners if color settings changed
+    if (key == 'primaryColor' || key == 'accentColor') {
+      _colorController.add(value);
+    }
   }
 
   /// Reset settings to default
@@ -98,6 +109,8 @@ class SettingsService {
   static String get pinCode => getSetting('pinCode', '');
   static String get apiKeySource => getSetting('apiKeySource', 'inbuilt');
   static String get customApiKey => getSetting('customApiKey', '');
+  static String get primaryColor => getSetting('primaryColor', 'blue');
+  static String get accentColor => getSetting('accentColor', 'blue');
 
   /// Set PIN lock with hashed password
   static void setPinLock(String pin) {
