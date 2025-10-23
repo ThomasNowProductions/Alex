@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-FLUTTER_DIR="${FLUTTER_DIR:-/workspaces/Alex/flutter}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-if [ ! -d "${FLUTTER_DIR}" ]; then
-  mkdir -p "${FLUTTER_DIR}"
+DEFAULT_FLUTTER_DIR="/usr/local/flutter"
+WORKSPACE_FLUTTER_DIR="${WORKSPACE_FLUTTER_DIR:-${REPO_ROOT}/.flutter-sdk}"
+
+if [ -n "${FLUTTER_DIR:-}" ]; then
+  TARGET_DIR="${FLUTTER_DIR}"
+elif [ -x "${DEFAULT_FLUTTER_DIR}/bin/flutter" ]; then
+  TARGET_DIR="${DEFAULT_FLUTTER_DIR}"
+else
+  TARGET_DIR="${WORKSPACE_FLUTTER_DIR}"
 fi
+
+FLUTTER_DIR="${TARGET_DIR}"
 
 if [ ! -x "${FLUTTER_DIR}/bin/flutter" ]; then
   rm -rf "${FLUTTER_DIR}"

@@ -81,3 +81,4 @@ generated_plugin_registrant.dart
 # Local environment files
 # Ignore the project's environment file containing secrets
 assets/.env
+.flutter-sdk/
