@@ -122,72 +122,306 @@ class OllamaService {
       final enhancedSystemPrompt = '$baseSystemPrompt\n\n$contextPrompt';
       AppLogger.d('Enhanced system prompt created, length: ${enhancedSystemPrompt.length}');
 
-      // Optionally enrich with live web data
-      final webResults = await _performWebSearch(prompt);
-      final webContext = _buildWebSearchContext(webResults);
-
+      final shouldOfferTools = _isWebSearchEnabled && !_userOptedOutOfSearch(prompt);
       final messages = [
         {
           'role': 'system',
           'content': enhancedSystemPrompt,
         },
-        if (webContext != null)
-          {
-            'role': 'system',
-            'content': webContext,
-          },
         {
           'role': 'user',
           'content': prompt,
         },
       ];
 
-      AppLogger.d('API POST $_baseUrl/chat');
+      final webResults = <WebSearchResult>[];
+      const maxToolIterations = 4;
+      for (var iteration = 0; iteration < maxToolIterations; iteration++) {
+        final response = await _callChatEndpoint(
+          messages,
+          tools: shouldOfferTools ? _webTools : null,
+        );
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/chat'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_apiKey',
-        },
-        body: jsonEncode({
-          'model': _model,
-          'messages': messages,
-          'stream': false,
-        }),
-      );
+        stopwatch.stop();
+        AppLogger.i('AI API call took ${stopwatch.elapsed.inMilliseconds}ms');
 
-      stopwatch.stop();
-      AppLogger.i('AI API call took ${stopwatch.elapsed.inMilliseconds}ms');
+        final message = response['message'] as Map<String, dynamic>? ?? {};
+        final content = (message['content'] ?? '').toString();
+        final thinking = (message['thinking'] ?? '').toString();
+        final toolCalls = (message['tool_calls'] as List<dynamic>? ?? [])
+            .cast<Map<String, dynamic>>();
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final content = data['message']['content'].trim();
-        AppLogger.i('AI completion successful, status: ${response.statusCode}, response length: ${content.length}');
-        return AIResponse(content: content, webResults: webResults);
-      } else {
-        AppLogger.e('AI API request failed with status: ${response.statusCode}');
-        throw Exception('Failed to get AI response: ${response.statusCode} - ${response.body}');
+        final assistantMessage = <String, dynamic>{'role': 'assistant'};
+        if (content.isNotEmpty) {
+          assistantMessage['content'] = content;
+        }
+        if (thinking.isNotEmpty) {
+          assistantMessage['thinking'] = thinking;
+        }
+        if (toolCalls.isNotEmpty) {
+          assistantMessage['tool_calls'] = toolCalls;
+        }
+        messages.add(assistantMessage);
+
+        if (toolCalls.isEmpty) {
+          final trimmed = content.trim();
+          if (trimmed.isEmpty) {
+            throw Exception('Received empty response from Ollama.');
+          }
+          AppLogger.i('AI completion successful with ${webResults.length} web results');
+          return AIResponse(content: trimmed, webResults: webResults);
+        }
+
+        if (!shouldOfferTools) {
+          AppLogger.w('Received tool calls despite tools being disabled; breaking loop.');
+          final trimmed = content.trim();
+          return AIResponse(content: trimmed.isEmpty ? content : trimmed, webResults: webResults);
+        }
+
+        for (final call in toolCalls) {
+          final function = call['function'] as Map<String, dynamic>? ?? {};
+          final name = (function['name'] ?? '').toString();
+          final arguments = _parseToolArguments(function['arguments']);
+
+          switch (name) {
+            case 'web_search':
+              final query = (arguments['query'] ?? '').toString().trim();
+              if (query.isEmpty) {
+                AppLogger.w('web_search tool called without a query');
+                messages.add({
+                  'role': 'tool',
+                  'tool_name': name,
+                  'content': jsonEncode({
+                    'error': 'Missing query parameter for web_search tool.',
+                  }),
+                });
+                continue;
+              }
+
+              final maxResultsArg = arguments['max_results'];
+              final maxResults = maxResultsArg is num
+                  ? maxResultsArg.toInt()
+                  : int.tryParse(maxResultsArg?.toString() ?? '');
+
+              final searchResults = await _performWebSearch(
+                query: query,
+                maxResultsOverride: maxResults,
+              );
+
+              for (final result in searchResults) {
+                final existingIndex =
+                    webResults.indexWhere((element) => element.url == result.url && result.url.isNotEmpty);
+                if (existingIndex >= 0) {
+                  webResults[existingIndex] = result;
+                } else {
+                  webResults.add(result);
+                }
+              }
+
+              messages.add({
+                'role': 'tool',
+                'tool_name': name,
+                'content': jsonEncode({
+                  'results': searchResults.map((r) => r.toJson()).toList(),
+                }),
+              });
+              break;
+            case 'web_fetch':
+              final url = (arguments['url'] ?? '').toString();
+              if (url.isEmpty) {
+                AppLogger.w('web_fetch tool called without a url');
+                messages.add({
+                  'role': 'tool',
+                  'tool_name': name,
+                  'content': jsonEncode({
+                    'error': 'Missing url parameter for web_fetch tool.',
+                  }),
+                });
+                continue;
+              }
+
+              final fetched = await _fetchWebContent(url);
+              messages.add({
+                'role': 'tool',
+                'tool_name': name,
+                'content': jsonEncode(fetched ?? {
+                  'url': url,
+                  'error': 'Failed to retrieve content for the provided URL.',
+                }),
+              });
+
+              if (fetched != null) {
+                var matched = false;
+                for (var i = 0; i < webResults.length; i++) {
+                  if (webResults[i].url == url) {
+                    webResults[i] = webResults[i].copyWith(
+                      fullContent: (fetched['content'] ?? '').toString(),
+                      links: (fetched['links'] as List<dynamic>? ?? [])
+                          .map((e) => e.toString())
+                          .toList(),
+                    );
+                    matched = true;
+                    break;
+                  }
+                }
+
+                if (!matched) {
+                  webResults.add(
+                    WebSearchResult(
+                      title: (fetched['title'] ?? '').toString(),
+                      url: url,
+                      snippet: (fetched['content'] ?? '').toString(),
+                      fullContent: (fetched['content'] ?? '').toString(),
+                      links: (fetched['links'] as List<dynamic>? ?? [])
+                          .map((e) => e.toString())
+                          .toList(),
+                    ),
+                  );
+                }
+              }
+              break;
+            default:
+              AppLogger.w('Unknown tool requested: $name');
+              messages.add({
+                'role': 'tool',
+                'tool_name': name,
+                'content': jsonEncode({
+                  'error': 'Unknown tool requested: $name',
+                }),
+              });
+          }
+        }
+
+        stopwatch.reset();
+        stopwatch.start();
       }
+
+      throw Exception('Exceeded maximum tool call iterations with Ollama.');
     } catch (e) {
       AppLogger.e('Error connecting to Ollama Cloud API', e);
       throw Exception('Error connecting to Ollama Cloud API: $e');
     }
   }
 
-  static Future<List<WebSearchResult>> _performWebSearch(String prompt) async {
+  static Future<Map<String, dynamic>> _callChatEndpoint(
+    List<Map<String, dynamic>> messages, {
+    List<Map<String, dynamic>>? tools,
+  }) async {
+    AppLogger.d('API POST $_baseUrl/chat');
+    final payload = {
+      'model': _model,
+      'messages': messages,
+      'stream': false,
+      if (tools != null && tools.isNotEmpty) 'tools': tools,
+    };
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/chat'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_apiKey',
+      },
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode != 200) {
+      AppLogger.e('AI API request failed with status: ${response.statusCode}');
+      throw Exception('Failed to get AI response: ${response.statusCode} - ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  static List<Map<String, dynamic>> get _webTools => [
+        {
+          'type': 'function',
+          'function': {
+            'name': 'web_search',
+            'description':
+                'Use this tool to retrieve up-to-date information from the web when the user requests recent data or current events. Only call it when necessary.',
+            'parameters': {
+              'type': 'object',
+              'required': ['query'],
+              'properties': {
+                'query': {
+                  'type': 'string',
+                  'description': 'The search query to send to the web_search endpoint.',
+                },
+                'max_results': {
+                  'type': 'integer',
+                  'description':
+                      'Optional maximum number of results to return (1-10). Defaults to the user configured limit.',
+                  'minimum': 1,
+                  'maximum': 10,
+                },
+              },
+            },
+          },
+        },
+        {
+          'type': 'function',
+          'function': {
+            'name': 'web_fetch',
+            'description':
+                'Fetch the full contents of a specific URL previously discovered via web_search when more context is required.',
+            'parameters': {
+              'type': 'object',
+              'required': ['url'],
+              'properties': {
+                'url': {
+                  'type': 'string',
+                  'description': 'The URL to fetch detailed content from.',
+                },
+              },
+            },
+          },
+        },
+      ];
+
+  static Map<String, dynamic> _parseToolArguments(dynamic rawArguments) {
+    if (rawArguments is Map<String, dynamic>) {
+      return rawArguments;
+    }
+
+    if (rawArguments is String && rawArguments.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawArguments);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+      } catch (e) {
+        AppLogger.w('Failed to decode tool arguments: $e');
+      }
+    }
+
+    return {};
+  }
+
+  static bool _userOptedOutOfSearch(String prompt) {
+    final normalized = prompt.toLowerCase();
+    const optOutPhrases = [
+      "don't search",
+      'do not search',
+      'no search',
+      'no need to search',
+      'without searching',
+      'no internet',
+    ];
+
+    return optOutPhrases.any((phrase) => normalized.contains(phrase));
+  }
+
+  static Future<List<WebSearchResult>> _performWebSearch({
+    required String query,
+    int? maxResultsOverride,
+  }) async {
     if (!_isWebSearchEnabled) {
       AppLogger.d('Web search disabled; skipping enrichment');
       return [];
     }
 
-    final trimmedPrompt = prompt.trim();
-    if (trimmedPrompt.isEmpty) {
-      return [];
-    }
-
-    if (!_shouldPerformWebSearch(trimmedPrompt)) {
-      AppLogger.d('Prompt not deemed time-sensitive; skipping web search');
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) {
       return [];
     }
 
@@ -200,8 +434,8 @@ class OllamaService {
           'Authorization': 'Bearer $_apiKey',
         },
         body: jsonEncode({
-          'query': trimmedPrompt,
-          'max_results': _webSearchMaxResults,
+          'query': trimmedQuery,
+          'max_results': _determineMaxResults(maxResultsOverride),
         }),
       );
 
@@ -277,96 +511,12 @@ class OllamaService {
     }
   }
 
-  static String? _buildWebSearchContext(List<WebSearchResult> results) {
-    if (results.isEmpty) {
-      return null;
+  static int _determineMaxResults(int? override) {
+    if (override == null) {
+      return _webSearchMaxResults;
     }
 
-    final buffer = StringBuffer();
-    buffer.writeln('WEB SEARCH RESULTS:');
-    buffer.writeln('===================');
-
-    for (var i = 0; i < results.length; i++) {
-      final result = results[i];
-      buffer.writeln('Result ${i + 1}: ${result.title}');
-      if (result.url.isNotEmpty) {
-        buffer.writeln('URL: ${result.url}');
-      }
-      if (result.displayContent.isNotEmpty) {
-        var excerpt = result.displayContent.trim();
-        const maxLength = 1200;
-        if (excerpt.length > maxLength) {
-          excerpt = '${excerpt.substring(0, maxLength)}...';
-        }
-        buffer.writeln(excerpt);
-      }
-      if (result.links.isNotEmpty) {
-        buffer.writeln('Links referenced: ${result.links.join(', ')}');
-      }
-      buffer.writeln();
-    }
-
-    buffer.writeln('Use the search findings to provide up-to-date information where relevant.');
-    return buffer.toString();
-  }
-
-  static bool _shouldPerformWebSearch(String prompt) {
-    final normalized = prompt.toLowerCase();
-
-    const optOutPhrases = [
-      "don't search",
-      "do not search",
-      "no search",
-      "no need to search",
-      "without searching",
-      "no internet",
-    ];
-
-    if (optOutPhrases.any((phrase) => normalized.contains(phrase))) {
-      return false;
-    }
-
-    const timeSensitiveKeywords = [
-      'today',
-      'tonight',
-      'current',
-      'currently',
-      'latest',
-      'recent',
-      'update',
-      'breaking',
-      'news',
-      'weather',
-      'forecast',
-      'traffic',
-      'score',
-      'game',
-      'stock',
-      'price',
-      'market',
-      'earnings',
-      'release',
-      'event',
-      'happening now',
-    ];
-
-    if (timeSensitiveKeywords.any((keyword) => normalized.contains(keyword))) {
-      return true;
-    }
-
-    final recentYearPattern = RegExp(r'\b20(2[3-9]|3\d)\b');
-    final relativeTimePattern =
-        RegExp(r'\b(this (week|month|year)|next (week|month)|last (week|month)|in the past (day|week|month))\b');
-
-    if (recentYearPattern.hasMatch(normalized) || relativeTimePattern.hasMatch(normalized)) {
-      return true;
-    }
-
-    final explicitWebRequestPattern = RegExp(r'\b(online|internet|web)\b');
-    if (explicitWebRequestPattern.hasMatch(normalized) && normalized.contains('find')) {
-      return true;
-    }
-
-    return false;
+    final sanitized = override.clamp(1, 10);
+    return sanitized <= _webSearchMaxResults ? sanitized : _webSearchMaxResults;
   }
 }

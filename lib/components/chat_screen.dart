@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/chat_state.dart';
-import '../widgets/chat_message.dart';
 import '../widgets/chat_ui_components.dart';
 import '../services/chat_business_logic.dart';
 import '../services/chat_speech_handler.dart';
@@ -85,8 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_state.messages.isNotEmpty)
-                        _state.messages[0],
+                      for (final message in _state.messages) message,
                     ],
                   ),
                 ),

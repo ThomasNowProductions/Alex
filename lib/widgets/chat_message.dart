@@ -45,7 +45,14 @@ class ChatMessage extends StatelessWidget {
             height: 220,
           ),
           // Text content - only show when there's actual text
-          if (text.isNotEmpty)
+          if (isLoading)
+            const SizedBox(
+              height: 220,
+              child: Center(
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              ),
+            )
+          else if (text.isNotEmpty)
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.85,
               height: 220, // Match the background circle height

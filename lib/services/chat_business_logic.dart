@@ -37,14 +37,25 @@ class ChatBusinessLogic {
     state.focusNode.requestFocus();
 
     setLoading(true);
-    updateMessages([
-      ChatMessage(
-        text: "",
-        isUser: false,
-        timestamp: DateTime.now(),
-        isLoading: true,
-      )
-    ]);
+
+    final currentMessages = List<ChatMessage>.from(state.messages);
+    final userChatMessage = ChatMessage(
+      text: message,
+      isUser: true,
+      timestamp: DateTime.now(),
+      isLoading: false,
+    );
+    currentMessages.add(userChatMessage);
+
+    final loadingPlaceholder = ChatMessage(
+      text: '',
+      isUser: false,
+      timestamp: DateTime.now(),
+      isLoading: true,
+    );
+
+    final pendingMessages = List<ChatMessage>.from(currentMessages)..add(loadingPlaceholder);
+    updateMessages(pendingMessages);
 
     try {
       AppLogger.d('Getting AI response for user message');
@@ -54,26 +65,27 @@ class ChatBusinessLogic {
       // Save AI response to conversation history
       ConversationService.addMessage(aiResponse.content, false);
 
-      updateMessages([
-        ChatMessage(
+      final updatedMessages = List<ChatMessage>.from(currentMessages)
+        ..add(ChatMessage(
           text: aiResponse.content,
           isUser: false,
           timestamp: DateTime.now(),
           isLoading: false,
-        )
-      ]);
+        ));
+
+      updateMessages(updatedMessages);
 
       AppLogger.i('AI response sent to user, length: ${aiResponse.content.length}');
     } catch (e) {
       AppLogger.e('Failed to get AI response', e);
-      updateMessages([
-        ChatMessage(
+      final fallbackMessages = List<ChatMessage>.from(currentMessages)
+        ..add(ChatMessage(
           text: "Sorry, I couldn't process your message right now.",
           isUser: false,
           timestamp: DateTime.now(),
           isLoading: false,
-        )
-      ]);
+        ));
+      updateMessages(fallbackMessages);
     } finally {
       setLoading(false);
       await ConversationService.saveContext();
