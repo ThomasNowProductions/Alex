@@ -27,6 +27,7 @@ class ChatState {
   // Summarization state
   Timer? summarizationTimer;
   DateTime? lastSummarizationTime;
+  int lastSummarizedMessageCount = 0;
 
   // Safety state
   bool safetyDialogShownThisSession = false;
