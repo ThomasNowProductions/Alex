@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/chat_state.dart';
 import '../widgets/chat_message.dart';
 import '../widgets/chat_ui_components.dart';
@@ -20,10 +22,12 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final ChatState _state = ChatState();
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode()..requestFocus();
     _initializeServices();
     _startSummarizationTimer();
     ChatSafetyHandler.resetSafetyDialogFlag(_state);
@@ -34,6 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _state.dispose();
     _state.summarizationTimer?.cancel();
     ChatSummarizationHandler.triggerSummarizationIfNeeded(_state);
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -73,45 +78,65 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChatUIComponents.buildChatLayout(
-      context: context,
-      child: _state.messages.isEmpty
-          ? ChatUIComponents.buildEmptyState(context, _state.currentWelcomeMessage)
-          : _state.messages.isNotEmpty
-              ? Center(child: _state.messages[0])
-              : const SizedBox(),
-      bottomInput: Row(
-        children: [
-          Expanded(
-            child: ChatUIComponents.buildInputField(
-              context,
-              _state,
-              _state.currentPlaceholderText,
-              _sendMessage,
-              _toggleSpeechRecognition,
-            ),
-          ),
-          const SizedBox(width: 12),
-          ChatUIComponents.buildSendButton(
-            context,
-            _state.isLoading,
-            () => _sendMessage(_state.messageController.text),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const SettingsScreen(),
-            ),
-          );
+    return Focus(
+      autofocus: true,
+      child: RawKeyboardListener(
+        focusNode: _focusNode,
+        onKey: (RawKeyEvent event) {
+          if (event is RawKeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.keyQ && HardwareKeyboard.instance.isControlPressed) {
+              exit(0);
+            } else if (event.logicalKey == LogicalKeyboardKey.comma && HardwareKeyboard.instance.isControlPressed) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            }
+          }
         },
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        mini: true,
-        child: const Icon(Icons.settings, size: 16),
+        child: ChatUIComponents.buildChatLayout(
+          context: context,
+          child: _state.messages.isEmpty
+              ? ChatUIComponents.buildEmptyState(context, _state.currentWelcomeMessage)
+              : _state.messages.isNotEmpty
+                  ? Center(child: _state.messages[0])
+                  : const SizedBox(),
+          bottomInput: Row(
+            children: [
+              Expanded(
+                child: ChatUIComponents.buildInputField(
+                  context,
+                  _state,
+                  _state.currentPlaceholderText,
+                  _sendMessage,
+                  _toggleSpeechRecognition,
+                ),
+              ),
+              const SizedBox(width: 12),
+              ChatUIComponents.buildSendButton(
+                context,
+                _state.isLoading,
+                () => _sendMessage(_state.messageController.text),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            mini: true,
+            child: const Icon(Icons.settings, size: 16),
+          ),
+        ),
       ),
     );
   }
