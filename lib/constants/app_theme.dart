@@ -51,11 +51,21 @@ class AppTheme {
 
   /// Custom color scheme for chat messages
   static Color getMessageBackgroundColor(BuildContext context, bool isLoading) {
-    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.12);
+    final colorScheme = Theme.of(context).colorScheme;
+    final baseColor = isLoading ? colorScheme.secondary : colorScheme.primary;
+
+    // Increase the glow opacity slightly for the wait/think state so the
+    // feedback remains visible without ignoring the user's theme selection.
+    final alpha = isLoading ? 0.16 : 0.12;
+    return baseColor.withOpacity(alpha);
   }
 
   /// Custom color scheme for chat message shadows
   static Color getMessageShadowColor(BuildContext context, bool isLoading) {
-    return Theme.of(context).colorScheme.primary.withValues(alpha: 0.06);
+    final colorScheme = Theme.of(context).colorScheme;
+    final baseColor = isLoading ? colorScheme.secondary : colorScheme.primary;
+
+    final alpha = isLoading ? 0.1 : 0.06;
+    return baseColor.withOpacity(alpha);
   }
 }

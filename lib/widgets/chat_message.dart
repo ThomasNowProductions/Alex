@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:markdown_widget/markdown_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:markdown_widget/markdown_widget.dart';
+
+import '../constants/app_theme.dart';
 
 /// Widget for displaying chat messages with markdown support
 class ChatMessage extends StatelessWidget {
@@ -30,12 +32,12 @@ class ChatMessage extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                  color: AppTheme.getMessageBackgroundColor(context, isLoading),
                   blurRadius: 50,
                   spreadRadius: 8,
                 ),
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.06),
+                  color: AppTheme.getMessageShadowColor(context, isLoading),
                   blurRadius: 100,
                   spreadRadius: 20,
                 ),
