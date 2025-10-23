@@ -58,10 +58,10 @@ Future<void> _sendMessage(String message) async
 8. Triggers summarization if needed
 
 ##### `_getAIResponse(String userMessage)`
-Retrieves AI response from Ollama service.
+Retrieves the structured AI response from Ollama service.
 
 ```dart
-Future<String> _getAIResponse(String userMessage) async
+Future<AIResponse> _getAIResponse(String userMessage) async
 ```
 
 ##### Speech Recognition Methods

@@ -19,6 +19,9 @@ class SettingsService {
     'customApiKey': '', // Custom API key if using custom source
     'primaryColor': 'blue', // Primary color for the theme
     'accentColor': 'blue', // Accent color for highlights
+    'webSearchEnabled': true, // Enable Ollama web search integration
+    'webSearchMaxResults': 3, // Number of results requested from Ollama web search
+    'webFetchResultCount': 2, // Number of results to expand with web_fetch
   };
 
   static Map<String, dynamic> _settings = Map.from(_defaultSettings);
@@ -111,6 +114,9 @@ class SettingsService {
   static String get customApiKey => getSetting('customApiKey', '');
   static String get primaryColor => getSetting('primaryColor', 'blue');
   static String get accentColor => getSetting('accentColor', 'blue');
+  static bool get webSearchEnabled => getSetting('webSearchEnabled', true);
+  static int get webSearchMaxResults => getSetting('webSearchMaxResults', 3);
+  static int get webFetchResultCount => getSetting('webFetchResultCount', 2);
 
   /// Set PIN lock with hashed password
   static void setPinLock(String pin) {
@@ -158,6 +164,29 @@ class SettingsService {
     setSetting('customApiKey', apiKey);
     saveSettings();
     AppLogger.i('Custom API key updated');
+  }
+
+  /// Enable or disable Ollama web search enrichment
+  static void setWebSearchEnabled(bool enabled) {
+    setSetting('webSearchEnabled', enabled);
+    saveSettings();
+    AppLogger.i('Web search integration ${enabled ? 'enabled' : 'disabled'}');
+  }
+
+  /// Update the maximum number of web search results requested from Ollama
+  static void setWebSearchMaxResults(int maxResults) {
+    final clamped = maxResults.clamp(1, 10).toInt();
+    setSetting('webSearchMaxResults', clamped);
+    saveSettings();
+    AppLogger.i('Web search max results set to: $clamped');
+  }
+
+  /// Update the number of search results to expand using web_fetch
+  static void setWebFetchResultCount(int count) {
+    final clamped = count.clamp(0, 5).toInt();
+    setSetting('webFetchResultCount', clamped);
+    saveSettings();
+    AppLogger.i('Web fetch expansion count set to: $clamped');
   }
 
   /// Get the current API key based on the selected source

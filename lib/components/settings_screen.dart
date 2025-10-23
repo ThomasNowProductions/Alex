@@ -363,7 +363,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(height: 1),
           Padding(
             padding: const EdgeInsets.all(20),
-            child: _buildApiKeySetting(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildApiKeySetting(),
+                const SizedBox(height: 24),
+                _buildWebSearchSettings(),
+              ],
+            ),
           ),
         ],
       ),
@@ -493,6 +500,165 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildWebSearchSettings() {
+    final webSearchEnabled = SettingsService.webSearchEnabled;
+    final maxResults = SettingsService.webSearchMaxResults;
+    final fetchCount = SettingsService.webFetchResultCount;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Web Search Enrichment',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Let Alex call Ollama\'s web_search and web_fetch APIs before responding so conversations include fresh, factual context.',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 13,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Enable live web search',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Uses a small number of queries per message to keep replies current.',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: webSearchEnabled,
+              onChanged: (value) {
+                setState(() {
+                  SettingsService.setWebSearchEnabled(value);
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _buildWebSearchSlider(
+          title: 'Maximum search results',
+          description: 'Controls how many sources Ollama returns per query (1–10).',
+          value: maxResults,
+          min: 1,
+          max: 10,
+          enabled: webSearchEnabled,
+          onChanged: (val) {
+            setState(() {
+              SettingsService.setWebSearchMaxResults(val);
+            });
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildWebSearchSlider(
+          title: 'Expand top results',
+          description: 'Fetch full articles for deeper context before replying (0–5).',
+          value: fetchCount,
+          min: 0,
+          max: 5,
+          enabled: webSearchEnabled,
+          onChanged: (val) {
+            setState(() {
+              SettingsService.setWebFetchResultCount(val);
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebSearchSlider({
+    required String title,
+    required String description,
+    required int value,
+    required int min,
+    required int max,
+    required bool enabled,
+    required void Function(int) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            Text(
+              value.toString(),
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          description,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            height: 1.4,
+          ),
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: Theme.of(context).colorScheme.primary,
+            inactiveTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            thumbColor: Theme.of(context).colorScheme.primary,
+            overlayColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+          ),
+          child: Slider(
+            value: value.toDouble(),
+            min: min.toDouble(),
+            max: max.toDouble(),
+            divisions: max - min,
+            onChanged: enabled
+                ? (double newValue) => onChanged(newValue.round())
+                : null,
+          ),
+        ),
       ],
     );
   }
