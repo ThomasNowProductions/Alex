@@ -3,7 +3,6 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'dart:async';
 import '../constants/chat_constants.dart';
 import '../widgets/chat_message.dart';
-import 'web_search_result.dart';
 
 /// State management class for the chat screen
 class ChatState {
@@ -14,7 +13,6 @@ class ChatState {
   // Messages and UI state
   final List<ChatMessage> messages = [];
   bool isLoading = false;
-  List<WebSearchResult> lastSearchResults = [];
 
   // Current dynamic content
   late String currentWelcomeMessage;

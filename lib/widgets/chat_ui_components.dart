@@ -157,34 +157,34 @@ class ChatUIComponents {
             ],
           ),
         ),
-        child: Stack(
-          children: [
-            // Centered chat content
-            Positioned.fill(
-              top: 0,
-              bottom: 120,
-              child: child,
-            ),
-
-            // Floating input at bottom
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: AppConstants.inputPadding,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  border: Border(
-                    top: BorderSide(
-                      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Expanded(
+                child: child,
+              ),
+              SafeArea(
+                top: false,
+                child: Container(
+                  width: double.infinity,
+                  padding: AppConstants.inputPadding,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outline
+                            .withValues(alpha: 0.2),
+                      ),
                     ),
                   ),
+                  child: bottomInput,
                 ),
-                child: bottomInput,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: floatingActionButton != null ? Container(

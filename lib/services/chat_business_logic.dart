@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/ai_response.dart';
 import '../models/chat_state.dart';
-import '../models/web_search_result.dart';
 import '../services/conversation_service.dart';
 import '../services/ollama_service.dart';
 import '../services/safety_service.dart';
@@ -18,7 +17,6 @@ class ChatBusinessLogic {
     String message,
     Function(bool) setLoading,
     Function(List<ChatMessage>) updateMessages,
-    Function(List<WebSearchResult>) updateSearchResults,
   ) async {
     if (message.trim().isEmpty) return;
 
@@ -39,7 +37,6 @@ class ChatBusinessLogic {
     state.focusNode.requestFocus();
 
     setLoading(true);
-    updateSearchResults(const <WebSearchResult>[]);
     updateMessages([
       ChatMessage(
         text: "",
@@ -65,8 +62,6 @@ class ChatBusinessLogic {
           isLoading: false,
         )
       ]);
-
-      updateSearchResults(aiResponse.webResults);
 
       AppLogger.i('AI response sent to user, length: ${aiResponse.content.length}');
     } catch (e) {

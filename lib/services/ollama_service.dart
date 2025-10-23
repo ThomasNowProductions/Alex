@@ -186,6 +186,11 @@ class OllamaService {
       return [];
     }
 
+    if (!_shouldPerformWebSearch(trimmedPrompt)) {
+      AppLogger.d('Prompt not deemed time-sensitive; skipping web search');
+      return [];
+    }
+
     try {
       AppLogger.d('API POST $_baseUrl/web_search');
       final response = await http.post(
@@ -303,5 +308,65 @@ class OllamaService {
 
     buffer.writeln('Use the search findings to provide up-to-date information where relevant.');
     return buffer.toString();
+  }
+
+  static bool _shouldPerformWebSearch(String prompt) {
+    final normalized = prompt.toLowerCase();
+
+    const optOutPhrases = [
+      "don't search",
+      "do not search",
+      "no search",
+      "no need to search",
+      "without searching",
+      "no internet",
+    ];
+
+    if (optOutPhrases.any((phrase) => normalized.contains(phrase))) {
+      return false;
+    }
+
+    const timeSensitiveKeywords = [
+      'today',
+      'tonight',
+      'current',
+      'currently',
+      'latest',
+      'recent',
+      'update',
+      'breaking',
+      'news',
+      'weather',
+      'forecast',
+      'traffic',
+      'score',
+      'game',
+      'stock',
+      'price',
+      'market',
+      'earnings',
+      'release',
+      'event',
+      'happening now',
+    ];
+
+    if (timeSensitiveKeywords.any((keyword) => normalized.contains(keyword))) {
+      return true;
+    }
+
+    final recentYearPattern = RegExp(r'\b20(2[3-9]|3\d)\b');
+    final relativeTimePattern =
+        RegExp(r'\b(this (week|month|year)|next (week|month)|last (week|month)|in the past (day|week|month))\b');
+
+    if (recentYearPattern.hasMatch(normalized) || relativeTimePattern.hasMatch(normalized)) {
+      return true;
+    }
+
+    final explicitWebRequestPattern = RegExp(r'\b(online|internet|web)\b');
+    if (explicitWebRequestPattern.hasMatch(normalized) && normalized.contains('find')) {
+      return true;
+    }
+
+    return false;
   }
 }
