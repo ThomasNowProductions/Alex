@@ -123,7 +123,7 @@ class OllamaService {
       AppLogger.d('Enhanced system prompt created, length: ${enhancedSystemPrompt.length}');
 
       final shouldOfferTools = _isWebSearchEnabled && !_userOptedOutOfSearch(prompt);
-      final messages = [
+      final List<Map<String, dynamic>> messages = [
         {
           'role': 'system',
           'content': enhancedSystemPrompt,
