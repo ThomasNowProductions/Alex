@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/chat_state.dart';
-import '../widgets/chat_message.dart';
 import '../widgets/chat_ui_components.dart';
 import '../services/chat_business_logic.dart';
 import '../services/chat_speech_handler.dart';
@@ -77,9 +76,20 @@ class _ChatScreenState extends State<ChatScreen> {
       context: context,
       child: _state.messages.isEmpty
           ? ChatUIComponents.buildEmptyState(context, _state.currentWelcomeMessage)
-          : _state.messages.isNotEmpty
-              ? Center(child: _state.messages[0])
-              : const SizedBox(),
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final message in _state.messages) message,
+                    ],
+                  ),
+                ),
+              ),
+            ),
       bottomInput: Row(
         children: [
           Expanded(

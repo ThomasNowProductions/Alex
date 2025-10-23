@@ -67,15 +67,18 @@ Primary service for AI chat completions.
 
 #### `getCompletion(String prompt)`
 
-Generates an AI response for the given user prompt.
+Generates an AI response for the given user prompt and provides any supporting web search context.
 
 ```dart
-Future<String> response = await OllamaService.getCompletion("Hello, Alex!");
+final aiResponse = await OllamaService.getCompletion("Hello, Alex!");
+print(aiResponse.content); // model reply
+print(aiResponse.webResults); // optional live search results
 ```
 
 **Features**:
 - Automatic system prompt loading from `assets/system_prompt.json`
 - Conversation context integration
+- Optional Ollama `web_search`/`web_fetch` enrichment with adjustable limits
 - Error handling for API failures
 - Environment variable configuration
 
@@ -201,9 +204,12 @@ For testing without API calls:
 ```dart
 // Mock implementation example
 class MockOllamaService {
-  static Future<String> getCompletion(String prompt) async {
+  static Future<AIResponse> getCompletion(String prompt) async {
     await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-    return "Mock response for: $prompt";
+    return AIResponse(
+      content: "Mock response for: $prompt",
+      webResults: const [],
+    );
   }
 }
 ```

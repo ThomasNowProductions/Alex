@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../models/ai_response.dart';
 import '../models/chat_state.dart';
 import '../services/conversation_service.dart';
 import '../services/ollama_service.dart';
@@ -36,14 +37,25 @@ class ChatBusinessLogic {
     state.focusNode.requestFocus();
 
     setLoading(true);
-    updateMessages([
-      ChatMessage(
-        text: "",
-        isUser: false,
-        timestamp: DateTime.now(),
-        isLoading: true,
-      )
-    ]);
+
+    final currentMessages = List<ChatMessage>.from(state.messages);
+    final userChatMessage = ChatMessage(
+      text: message,
+      isUser: true,
+      timestamp: DateTime.now(),
+      isLoading: false,
+    );
+    currentMessages.add(userChatMessage);
+
+    final loadingPlaceholder = ChatMessage(
+      text: '',
+      isUser: false,
+      timestamp: DateTime.now(),
+      isLoading: true,
+    );
+
+    final pendingMessages = List<ChatMessage>.from(currentMessages)..add(loadingPlaceholder);
+    updateMessages(pendingMessages);
 
     try {
       AppLogger.d('Getting AI response for user message');
@@ -51,28 +63,29 @@ class ChatBusinessLogic {
       final aiResponse = await getAIResponse(message);
 
       // Save AI response to conversation history
-      ConversationService.addMessage(aiResponse, false);
+      ConversationService.addMessage(aiResponse.content, false);
 
-      updateMessages([
-        ChatMessage(
-          text: aiResponse,
+      final updatedMessages = List<ChatMessage>.from(currentMessages)
+        ..add(ChatMessage(
+          text: aiResponse.content,
           isUser: false,
           timestamp: DateTime.now(),
           isLoading: false,
-        )
-      ]);
+        ));
 
-      AppLogger.i('AI response sent to user, length: ${aiResponse.length}');
+      updateMessages(updatedMessages);
+
+      AppLogger.i('AI response sent to user, length: ${aiResponse.content.length}');
     } catch (e) {
       AppLogger.e('Failed to get AI response', e);
-      updateMessages([
-        ChatMessage(
+      final fallbackMessages = List<ChatMessage>.from(currentMessages)
+        ..add(ChatMessage(
           text: "Sorry, I couldn't process your message right now.",
           isUser: false,
           timestamp: DateTime.now(),
           isLoading: false,
-        )
-      ]);
+        ));
+      updateMessages(fallbackMessages);
     } finally {
       setLoading(false);
       await ConversationService.saveContext();
@@ -80,7 +93,7 @@ class ChatBusinessLogic {
   }
 
   /// Get AI response from Ollama service
-  static Future<String> getAIResponse(String userMessage) async {
+  static Future<AIResponse> getAIResponse(String userMessage) async {
     return await OllamaService.getCompletion(userMessage);
   }
 

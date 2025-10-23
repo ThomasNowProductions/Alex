@@ -127,6 +127,7 @@ Handles communication with the Ollama Cloud API for AI responses.
 #### Key Features
 - **API Integration**: Communicates with Ollama Cloud API
 - **Context Enhancement**: Includes conversation history in prompts
+- **Live Web Search**: Calls Ollama `web_search`/`web_fetch` before completions when enabled
 - **System Prompt Management**: Loads personality from JSON file
 - **Error Handling**: Comprehensive error management and recovery
 
@@ -137,6 +138,9 @@ Handles communication with the Ollama Cloud API for AI responses.
 OLLAMA_BASE_URL=https://ollama.com/api
 OLLAMA_API_KEY=your-api-key-here
 OLLAMA_MODEL=gpt-oss:120b-cloud
+OLLAMA_WEB_SEARCH_ENABLED=true # optional override for settings toggle
+OLLAMA_WEB_SEARCH_MAX_RESULTS=3 # optional override (1-10)
+OLLAMA_WEB_FETCH_COUNT=2        # optional override (0-5)
 ```
 
 ##### System Prompt File (`assets/system_prompt.json`)
@@ -149,23 +153,24 @@ OLLAMA_MODEL=gpt-oss:120b-cloud
 #### API Reference
 
 ##### `getCompletion(String prompt)`
-Generates AI response for user input.
+Generates an AI response and accompanying metadata for user input.
 
 ```dart
-static Future<String> getCompletion(String prompt) async
+static Future<AIResponse> getCompletion(String prompt) async
 ```
 
 **Parameters**:
 - `prompt`: User's message text
 
-**Returns**: AI-generated response string
+**Returns**: [`AIResponse`](../lib/models/ai_response.dart) containing the model reply plus any web search results surfaced to the UI
 
 **Process**:
 1. Validates API key configuration
 2. Loads system prompt from assets
 3. Builds conversation context
-4. Makes API request to Ollama Cloud
-5. Returns processed response
+4. Optionally performs Ollama `web_search` and `web_fetch` calls for live context
+5. Makes the chat completion request to Ollama Cloud with the enriched prompt
+6. Returns the response alongside collected web results
 
 **Error Handling**:
 - Throws exception for missing/invalid API key
